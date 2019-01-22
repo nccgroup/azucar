@@ -47,49 +47,57 @@
         $Instance = $AzureObject.Instance
         #Retrieve Azure Resource Management Auth
         $RMAuth = $AzureObject.AzureConnections.ResourceManager
-        #List all VMs
+        #Retrieve Config
+        $AzureVMConfig = $AzureObject.AzureConfig.AzureVM
+        #Get all VMs
         $AllStatus = Get-AzSecRMObject -Instance $Instance -Authentication $RMAuth `
                                        -Provider $AzureSecStatus.Provider -Objectype "securityStatuses" `
                                        -APIVersion $AzureSecStatus.APIVersion -Verbosity $Verbosity -WriteLog $WriteLog
-        
         
         $AllVMs = $AllStatus | Where-Object {$_.properties.type -eq 'VirtualMachine'}
         #Get primary object
         $AllSecBaseline = @()
         if($AllVMs){
             foreach($vm in $AllVMs){
-                Write-AzucarMessage -WriteLog $WriteLog -Message ("Searching for Security baseline in {0}..." -f $vm.name) `
-                                    -Plugin $PluginName -Verbosity $Verbosity -IsVerbose
-                $WorkSpace = $vm.properties.workspaces | Select-Object id, customerId
-                $query = ('let query = \nSecurityBaseline\n| where AnalyzeResult == \"{0}\" and Computer=~ \"{1}\" \n| summarize AggregatedValue = dcount(BaselineRuleId) by BaselineRuleId, RuleSeverity, SourceComputerId, BaselineId, BaselineType, OSName, CceId, BaselineRuleType, Description, RuleSetting, ExpectedResult, ActualResult | sort by RuleSeverity asc| limit 1000000000; query' -f "Failed", $vm.name)
-                #Convert to JSON data
-                $requestBody = @{"query" = $query;}
-                $JsonData = $requestBody | ConvertTo-Json -Depth 50 | % { [System.Text.RegularExpressions.Regex]::Unescape($_) }
-                $URI = ("{0}{1}/{2}?api-version={3}" -f $Instance.ResourceManager, $WorkSpace.id, "api/query","2017-01-01-preview")
-                #POST Request
-                $AllSecurityBaseline = Get-AzSecRMObject -Manual -OwnQuery $URI -Authentication $RMAuth -Data $JsonData -Verbosity $Verbosity -Method "POST" -WriteLog $WriteLog
-                if($AllSecurityBaseline.Tables[0].Rows){
-                    Write-AzucarMessage -WriteLog $WriteLog -Message ("Getting Security baseline elements for {0}..." -f $vm.name) `
+                $workspaceid =  $vm.properties.resourceDetails | Where-Object {$_.name -eq 'Reporting workspace azure id'} | Select-Object -ExpandProperty value
+                #$WorkSpace = $vm.properties.workspaces | Select-Object id, customerId
+                if ($workspaceid){
+                    Write-AzucarMessage -WriteLog $WriteLog -Message ("Searching for Security baseline in {0}..." -f $vm.name) `
                                         -Plugin $PluginName -Verbosity $Verbosity -IsVerbose
-                    foreach ($row in $AllSecurityBaseline.Tables[0].Rows){
-                        $AzucarSecurityBaseline = New-Object -TypeName PSCustomObject
-                        $AzucarSecurityBaseline | Add-Member -type NoteProperty -name ServerName -value $vm.name
-                        $AzucarSecurityBaseline | Add-Member -type NoteProperty -name ResourceGroupName -value $vm.id.Split("/")[4]
-                        $AzucarSecurityBaseline | Add-Member -type NoteProperty -name SourceComputerId -value $row[2]
-                        $AzucarSecurityBaseline | Add-Member -type NoteProperty -name RuleSeverity -value $row[1]
-                        $AzucarSecurityBaseline | Add-Member -type NoteProperty -name BaselineRuleId -value $row[0]
-                        $AzucarSecurityBaseline | Add-Member -type NoteProperty -name BaselineType -value $row[4]
-                        $AzucarSecurityBaseline | Add-Member -type NoteProperty -name OSName -value $row[5]
-                        $AzucarSecurityBaseline | Add-Member -type NoteProperty -name CceId -value $row[6]
-                        $AzucarSecurityBaseline | Add-Member -type NoteProperty -name BaselineRuleType -value $row[7]
-                        $AzucarSecurityBaseline | Add-Member -type NoteProperty -name Description -value $row[8]
-                        $AzucarSecurityBaseline | Add-Member -type NoteProperty -name RuleSetting -value $row[9]
-                        $AzucarSecurityBaseline | Add-Member -type NoteProperty -name ExpectedResult -value $row[10]
-                        $AzucarSecurityBaseline | Add-Member -type NoteProperty -name ActualResult -value $row[11]
-                        #Decorate Object
-                        $AzucarSecurityBaseline.PSObject.TypeNames.Insert(0,'AzureRM.NCCGroup.SecurityBaseline') 
-                        $AllSecBaseline+=$AzucarSecurityBaseline
+                    $query = ('let query = \nSecurityBaseline\n| where AnalyzeResult == \"{0}\" and Computer=~ \"{1}\" \n| summarize AggregatedValue = dcount(BaselineRuleId) by BaselineRuleId, RuleSeverity, SourceComputerId, BaselineId, BaselineType, OSName, CceId, BaselineRuleType, Description, RuleSetting, ExpectedResult, ActualResult | sort by RuleSeverity asc| limit 1000000000; query' -f "Failed", $vm.name)
+                    #Convert to JSON data
+                    $requestBody = @{"query" = $query;}
+                    $JsonData = $requestBody | ConvertTo-Json -Depth 50 | % { [System.Text.RegularExpressions.Regex]::Unescape($_) }
+                    $URI = ("{0}{1}/{2}?api-version={3}" -f $Instance.ResourceManager, $workspaceid, "api/query","2017-01-01-preview")
+                    #POST Request
+                    $AllSecurityBaseline = Get-AzSecRMObject -Manual -OwnQuery $URI -Authentication $RMAuth -Data $JsonData -Verbosity $Verbosity -Method "POST" -WriteLog $WriteLog
+                    if($AllSecurityBaseline.Tables[0].Rows){
+                        Write-AzucarMessage -WriteLog $WriteLog -Message ("Getting Security baseline elements for {0}..." -f $vm.name) `
+                                            -Plugin $PluginName -Verbosity $Verbosity -IsVerbose
+                        foreach ($row in $AllSecurityBaseline.Tables[0].Rows){
+                            $AzucarSecurityBaseline = New-Object -TypeName PSCustomObject
+                            $AzucarSecurityBaseline | Add-Member -type NoteProperty -name ServerName -value $vm.name
+                            $AzucarSecurityBaseline | Add-Member -type NoteProperty -name ResourceGroupName -value $vm.id.Split("/")[4]
+                            $AzucarSecurityBaseline | Add-Member -type NoteProperty -name SourceComputerId -value $row[2]
+                            $AzucarSecurityBaseline | Add-Member -type NoteProperty -name RuleSeverity -value $row[1]
+                            $AzucarSecurityBaseline | Add-Member -type NoteProperty -name BaselineRuleId -value $row[0]
+                            $AzucarSecurityBaseline | Add-Member -type NoteProperty -name BaselineType -value $row[4]
+                            $AzucarSecurityBaseline | Add-Member -type NoteProperty -name OSName -value $row[5]
+                            $AzucarSecurityBaseline | Add-Member -type NoteProperty -name CceId -value $row[6]
+                            $AzucarSecurityBaseline | Add-Member -type NoteProperty -name BaselineRuleType -value $row[7]
+                            $AzucarSecurityBaseline | Add-Member -type NoteProperty -name Description -value $row[8]
+                            $AzucarSecurityBaseline | Add-Member -type NoteProperty -name RuleSetting -value $row[9]
+                            $AzucarSecurityBaseline | Add-Member -type NoteProperty -name ExpectedResult -value $row[10]
+                            $AzucarSecurityBaseline | Add-Member -type NoteProperty -name ActualResult -value $row[11]
+                            #Decorate Object
+                            $AzucarSecurityBaseline.PSObject.TypeNames.Insert(0,'AzureRM.NCCGroup.SecurityBaseline') 
+                            $AllSecBaseline+=$AzucarSecurityBaseline
+                        }
                     }
+                }
+                else{
+                    Write-AzucarMessage -WriteLog $WriteLog -Message ("No security baseline found for {0}..." -f $vm.name) `
+                                        -Plugin $PluginName -IsWarning -Verbosity $Verbosity -IsVerbose
                 }
             }
         }

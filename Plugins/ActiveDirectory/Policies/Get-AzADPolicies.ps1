@@ -1,4 +1,5 @@
 ﻿#Plugin extract policies from Azure AD
+#https://msdn.microsoft.com/en-us/library/azure/ad/graph/api/policy-operations
 [cmdletbinding()]
     Param (
             [Parameter(HelpMessage="Background Runspace ID")]
@@ -47,9 +48,10 @@
         $Instance = $AzureObject.Instance
         #Retrieve Azure Active Directory Auth
         $AADAuth = $AzureObject.AzureConnections.ActiveDirectory
-        #Get users
-        $AllPolicies = Get-AzSecAADObject -Instance $Instance -Authentication $AADAuth `
-                                          -Objectype "policies" -APIVersion $AADConfig.APIVersion -Verbosity $Verbosity -WriteLog $WriteLog
+        #Get policies
+        $URI = ("{0}myorganization/policies?api-version={1}" -f $Instance.Graph, $AADConfig.APIVersion)
+        $AllPolicies = Get-AzSecAADObject -OwnQuery $URI -Manual -Authentication $AADAuth `
+                                          -Verbosity $Verbosity -WriteLog $WriteLog
     }
     End{
         if($AllPolicies){

@@ -38,6 +38,23 @@
         Import-LocalizedData @LocalizedDataParams;
 
         $Section = $AzureObject.AzureSection
+
+        #Retrieve instance
+        $Instance = $AzureObject.Instance
+        #Retrieve Azure Resource Management Auth
+        $RMAuth = $AzureObject.AzureConnections.ResourceManager
+        $AzureVMConfig = $AzureObject.AzureConfig.AzureVM
+        $AllVMs = @()
+        <#
+        #List All Virtual Machines
+        $VMs = Get-AzSecRMObject -Instance $Instance -Authentication $RMAuth `
+                                 -Provider $AzureVMConfig.Provider -Objectype "virtualmachines" `
+                                 -APIVersion $AzureVMConfig.APIVersion -Verbosity $Verbosity -WriteLog $WriteLog
+        $myid =  $VMs.resources | Where-Object {$_.id -like '*2K8Test1/extensions/MicrosoftMonitoringAgent'} | Select-Object -ExpandProperty id
+        $URI = ("{0}{1}?api-version={2}" -f $Instance.ResourceManager, $myid, "2018-06-01")
+        $extension = Get-AzSecRMObject -Manual -OwnQuery $URI -Authentication $RMAuth -Verbosity $Verbosity -Method "GET" -WriteLog $WriteLog
+        Write-Host $extension.properties.settings
+        #>
     }
     Process{
         #Do things here

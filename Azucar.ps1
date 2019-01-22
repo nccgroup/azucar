@@ -110,7 +110,7 @@ param
     [parameter(ValueFromPipelineByPropertyName=$true, Mandatory= $false, HelpMessage= "Analyze Azure services")]
     [ValidateSet("ActiveDirectory","Databases","VirtualMachines", "SecurityAlerts", "SecurityCenter",
                  "RoleAssignments", "Firewall", "StorageAccounts","SecurityBaseline", "MissingPatches",
-                 "Web Application Firewall", "Custom", "All")]
+                 "Web Application Firewall", "SecurityPolicies", "SecurityContacts", "Custom", "AppServices", "DocumentDB", "All")]
     [Array]$Analysis=@("All"),
 
     [parameter(ValueFromPipelineByPropertyName=$true, Mandatory= $false, HelpMessage= "Export data to multiple formats")]
@@ -373,6 +373,10 @@ Begin{
                     {
                         $Plugins+= Get-ChildItem -Recurse "$ScriptPath\Plugins\Firewall\*.ps1" | Select-Object FullName
                     }
+                    'SecurityPolicies'
+                    {
+                        $Plugins+= Get-ChildItem -Recurse "$ScriptPath\Plugins\Security\SecurityPolicies\*.ps1" | Select-Object FullName
+                    }
                     'MissingPatches'
                     {
                         $Plugins+= Get-ChildItem -Recurse "$ScriptPath\Plugins\Security\Patches\*.ps1" | Select-Object FullName
@@ -381,9 +385,21 @@ Begin{
                     {
                         $Plugins+= Get-ChildItem -Recurse "$ScriptPath\Plugins\Security\Baseline\*.ps1" | Select-Object FullName
                     }
+                    'SecurityContacts'
+                    {
+                        $Plugins+= Get-ChildItem -Recurse "$ScriptPath\Plugins\Security\SecurityContacts\*.ps1" | Select-Object FullName
+                    }
                     'SecurityAlerts'
                     {
                         $Plugins+= Get-ChildItem -Recurse "$ScriptPath\Plugins\Alerts\*.ps1" | Select-Object FullName
+                    }
+                    'AppServices'
+                    {
+                        $Plugins+= Get-ChildItem -Recurse "$ScriptPath\Plugins\AppServices\*.ps1" | Select-Object FullName
+                    }
+                    'DocumentDB'
+                    {
+                        $Plugins+= Get-ChildItem -Recurse "$ScriptPath\Plugins\DocumentDB\*.ps1" | Select-Object FullName
                     }
                     'StorageAccounts'
                     {

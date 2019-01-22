@@ -1,4 +1,6 @@
 ﻿#Plugin extract Storage Account information from Azure
+#https://docs.microsoft.com/en-us/azure/azure-policy/scripts/ensure-https-stor-acct
+#https://docs.microsoft.com/en-us/azure/azure-policy/scripts/ensure-store-file-enc
 [cmdletbinding()]
     Param (
             [Parameter(HelpMessage="Background Runspace ID")]
@@ -71,6 +73,7 @@
                 $StrAccount | Add-Member -type NoteProperty -name primaryLocation -value $properties.primaryLocation
                 $StrAccount | Add-Member -type NoteProperty -name statusofPrimary -value $properties.statusOfPrimary
                 $StrAccount | Add-Member -type NoteProperty -name SkuName -value $StorageAccount.sku.name
+                $StrAccount | Add-Member -type NoteProperty -name supportsHttpsTrafficOnly -value $properties.supportsHttpsTrafficOnly
                 #Get Encryption Status
                 if($properties.encryption){
                     $StrAccount | Add-Member -type NoteProperty -name isEncrypted -value $true

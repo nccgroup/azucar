@@ -33,11 +33,11 @@ Function Set-DefaultBrowser{
     Process{
         if(-NOT $IE -AND (Test-Path -Path 'HKCU:\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice')){
             if($DefaultBrowser.ContainsKey("http")){
-                Write-AzucarMessage -Message ("Establishing default webbroser {0} for HTTP..." -f $DefaultBrowser.http) -Plugin "Set-DefaultBrowser" -IsVerbose -Verbosity $VerboseOptions -WriteLog $Global:WriteLog
+                Write-AzucarMessage -Message ("Establishing default web browser {0} for HTTP..." -f $DefaultBrowser.http) -Plugin "Set-DefaultBrowser" -IsVerbose -Verbosity $VerboseOptions -WriteLog $Global:WriteLog
                 Set-ItemProperty 'HKCU:\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice' -name ProgId -Value $DefaultBrowser.http
             }
             if($DefaultBrowser.ContainsKey("https")){
-                Write-AzucarMessage -Message ("Establishing default webbroser {0} for HTTPS..." -f $DefaultBrowser.http) -Plugin "Set-DefaultBrowser" -IsVerbose -Verbosity $VerboseOptions -WriteLog $Global:WriteLog
+                Write-AzucarMessage -Message ("Establishing default web browser {0} for HTTPS..." -f $DefaultBrowser.http) -Plugin "Set-DefaultBrowser" -IsVerbose -Verbosity $VerboseOptions -WriteLog $Global:WriteLog
                 Set-ItemProperty 'HKCU:\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\https\UserChoice' -name ProgId -Value $DefaultBrowser.https
             }
         }

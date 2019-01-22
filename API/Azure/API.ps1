@@ -167,8 +167,14 @@ Function New-WebRequest{
                     catch [Net.WebException]{
                         #Convert Exception
                         Convert-Exception -MyError $_ -FunctionName "New-WebRequest" -WriteLog $WriteLog
+                        $ErrorRecord = New-Object System.Management.Automation.ErrorRecord(
+                           (New-Object Exception("Request error in url:{0}" -f $Url)),
+                           $null,
+                           [System.Management.Automation.ErrorCategory]::InvalidData,
+                           $null
+                        )
                         #Convert Exception for URL
-                        Convert-Exception -MyError $Url -FunctionName "New-WebRequest" -WriteLog $WriteLog
+                        Convert-Exception -MyError $ErrorRecord -FunctionName "New-WebRequest" -WriteLog $WriteLog
                         #Get Exception Body Message
                         $reader = [System.IO.StreamReader]::new($_.Exception.Response.GetResponseStream())
                         $reader.BaseStream.Position = 0
@@ -225,70 +231,77 @@ Function Get-AzSecAADLinkedObject{
                                  -IsDebug -Verbosity $Verbosity -WriteLog $WriteLog
              return
         }
-        #Write Progress information
-        $statusBar=@{
-                Activity = "Azure Active Directory Analysis"
-                CurrentOperation=""
-                Status="Script started"
-        }
-        [String]$startCon = ("Starting Azure Rest Query on {0} to retrieve {1}" -f $ObjectDisplayName, $Relationship)
-        $statusBar.Status = $startCon
+        if($ObjectId -AND $ObjectDisplayName){
+            #Write Progress information
+            $statusBar=@{
+                    Activity = "Azure Active Directory Analysis"
+                    CurrentOperation=""
+                    Status="Script started"
+            }
+            [String]$startCon = ("Starting Azure Rest Query on {0} to retrieve {1}" -f $ObjectDisplayName, $Relationship)
+            $statusBar.Status = $startCon
 
-        #Get Auth Header and create URI
-        $AuthHeader = $Authentication.CreateAuthorizationHeader()
-        if($GetLinks){
-            $URI = '{0}/{1}/{2}/{3}/$links/{4}?api-version={5}'`
-                   -f $Instance.Graph, $Authentication.TenantID, $Objectype.Trim(), $ObjectId, $Relationship, $APIVersion
+            #Get Auth Header and create URI
+            $AuthHeader = $Authentication.CreateAuthorizationHeader()
+            if($GetLinks){
+                $URI = '{0}/{1}/{2}/{3}/$links/{4}?api-version={5}'`
+                       -f $Instance.Graph, $Authentication.TenantID, $Objectype.Trim(), $ObjectId, $Relationship, $APIVersion
+            }
+            else{
+                $URI = '{0}/{1}/{2}/{3}/{4}?api-version={5}'`
+                       -f $Instance.Graph, $Authentication.TenantID, $Objectype.Trim(), $ObjectId, $Relationship, $APIVersion
+            }
         }
         else{
-            $URI = '{0}/{1}/{2}/{3}/{4}?api-version={5}'`
-                   -f $Instance.Graph, $Authentication.TenantID, $Objectype.Trim(), $ObjectId, $Relationship, $APIVersion
+            $URI = $false;
         }
     }
     Process{
         try{
-            $requestHeader = @{
-                                "x-ms-version" = "2014-10-01";
-                                "Authorization" = $AuthHeader
-            }
-            ####Workaround for operation timed out ######
-            #https://social.technet.microsoft.com/wiki/contents/articles/29863.powershell-rest-api-invoke-restmethod-gotcha.aspx
-            $ServicePoint = [System.Net.ServicePointManager]::FindServicePoint($URI)
-            Write-Progress @statusBar
-            #$AllObjects = Invoke-RestMethod -Uri $URI -Headers $requestHeader -Method Get -ContentType "application/json" -TimeoutSec 60
-            $AllObjects = New-WebRequest -Url $URI -Headers $requestHeader -Method Get -Encoding "application/json" `
-                                         -UserAgent "Azucar" -Verbosity $Verbosity -WriteLog $WriteLog
+            if($URI){
+                $requestHeader = @{
+                                    "x-ms-version" = "2014-10-01";
+                                    "Authorization" = $AuthHeader
+                }
+                ####Workaround for operation timed out ######
+                #https://social.technet.microsoft.com/wiki/contents/articles/29863.powershell-rest-api-invoke-restmethod-gotcha.aspx
+                $ServicePoint = [System.Net.ServicePointManager]::FindServicePoint($URI)
+                Write-Progress @statusBar
+                #$AllObjects = Invoke-RestMethod -Uri $URI -Headers $requestHeader -Method Get -ContentType "application/json" -TimeoutSec 60
+                $AllObjects = New-WebRequest -Url $URI -Headers $requestHeader -Method Get -Encoding "application/json" `
+                                             -UserAgent "Azucar" -Verbosity $Verbosity -WriteLog $WriteLog
 
-            $ServicePoint.CloseConnectionGroup("")
-            Write-AzucarMessage -Message ($message.GetRequestObjectMessage -f $ObjectDisplayName) -Plugin "Get-AzSecAADLinkedObject" `
-                                     -IsDebug -Verbosity $Verbosity -WriteLog $WriteLog
-            ####close all the connections made to the host####
-            [void]$ServicePoint.CloseConnectionGroup("")
-            $tenantObjects = @()
-            $tenantObjects += $AllObjects.value
-            $moreObjects = $AllObjects 
-            if ($AllObjects.'odata.nextLink'){
-                $nextLink = $AllObjects.'odata.nextLink'
-                while ($nextLink -ne $null -and $nextLink.IndexOf('token=') -gt 0){
-                    $nextLink = $nextLink.Substring($nextLink.IndexOf('token=') + 6)
-                    if($GetLinks){
-                        $URI = '{0}/{1}/{2}/{3}/$links/{4}?api-version={5}&$top=999&$skiptoken={6}'`
-                       -f $Instance.Graph, $Authentication.TenantID, $Objectype.Trim(), $ObjectId, $Relationship, $APIVersion, $nextLink
+                $ServicePoint.CloseConnectionGroup("")
+                Write-AzucarMessage -Message ($message.GetRequestObjectMessage -f $ObjectDisplayName) -Plugin "Get-AzSecAADLinkedObject" `
+                                         -IsDebug -Verbosity $Verbosity -WriteLog $WriteLog
+                ####close all the connections made to the host####
+                [void]$ServicePoint.CloseConnectionGroup("")
+                $tenantObjects = @()
+                $tenantObjects += $AllObjects.value
+                $moreObjects = $AllObjects 
+                if ($AllObjects -AND $AllObjects.'odata.nextLink'){
+                    $nextLink = $AllObjects.'odata.nextLink'
+                    while ($nextLink -ne $null -and $nextLink.IndexOf('token=') -gt 0){
+                        $nextLink = $nextLink.Substring($nextLink.IndexOf('token=') + 6)
+                        if($GetLinks){
+                            $URI = '{0}/{1}/{2}/{3}/$links/{4}?api-version={5}&$top=999&$skiptoken={6}'`
+                           -f $Instance.Graph, $Authentication.TenantID, $Objectype.Trim(), $ObjectId, $Relationship, $APIVersion, $nextLink
+                        }
+                        else{
+                            $URI = '{0}/{1}/{2}/{3}/{4}?api-version={5}&$top=999&$skiptoken={6}'`
+                           -f $Instance.Graph, $Authentication.TenantID, $Objectype.Trim(), $ObjectId, $Relationship, $APIVersion, $nextLink
+                        }
+                       ####Workaround for operation timed out ######
+                       #https://social.technet.microsoft.com/wiki/contents/articles/29863.powershell-rest-api-invoke-restmethod-gotcha.aspx
+                       $ServicePoint = [System.Net.ServicePointManager]::FindServicePoint($URI)
+                       #$NextPage = Invoke-RestMethod -Method Get -Uri $URI -Headers $requestHeader -TimeoutSec 60
+                       $NextPage = New-WebRequest -Url $URI -Method Get -Headers $requestHeader `
+                                                  -Encoding "application/json" -UserAgent "Azucar" -Verbosity $Verbosity -WriteLog $WriteLog
+                       ####close all the connections made to the host####
+                       [void]$ServicePoint.CloseConnectionGroup("")
+                       $tenantObjects += $NextPage.value
+                       $nextLink = $nextPage.'odata.nextLink'
                     }
-                    else{
-                        $URI = '{0}/{1}/{2}/{3}/{4}?api-version={5}&$top=999&$skiptoken={6}'`
-                       -f $Instance.Graph, $Authentication.TenantID, $Objectype.Trim(), $ObjectId, $Relationship, $APIVersion, $nextLink
-                    }
-                   ####Workaround for operation timed out ######
-                   #https://social.technet.microsoft.com/wiki/contents/articles/29863.powershell-rest-api-invoke-restmethod-gotcha.aspx
-                   $ServicePoint = [System.Net.ServicePointManager]::FindServicePoint($URI)
-                   #$NextPage = Invoke-RestMethod -Method Get -Uri $URI -Headers $requestHeader -TimeoutSec 60
-                   $NextPage = New-WebRequest -Url $URI -Method Get -Headers $requestHeader `
-                                              -Encoding "application/json" -UserAgent "Azucar" -Verbosity $Verbosity -WriteLog $WriteLog
-                   ####close all the connections made to the host####
-                   [void]$ServicePoint.CloseConnectionGroup("")
-                   $tenantObjects += $NextPage.value
-                   $nextLink = $nextPage.'odata.nextLink'
                 }
             }
         }
@@ -329,6 +342,12 @@ Function Get-AzSecAADObject{
         [String]$Method = "GET",
 
         [parameter(ValueFromPipeline = $True,ValueFromPipeLineByPropertyName = $True)]
+        [Switch]$Manual,
+
+        [parameter(ValueFromPipeline = $True,ValueFromPipeLineByPropertyName = $True)]
+        [String]$OwnQuery,
+
+        [parameter(ValueFromPipeline = $True,ValueFromPipeLineByPropertyName = $True)]
         [String]$ContentType = "application/json",
 
         [parameter(ValueFromPipeline = $True,ValueFromPipeLineByPropertyName = $True)]
@@ -359,62 +378,72 @@ Function Get-AzSecAADObject{
         $statusBar.Status = $startCon
         
         $AuthHeader = $Authentication.CreateAuthorizationHeader()
-        $URI = '{0}/{1}/{2}?api-version={3}{4}' -f $Instance.Graph, $Authentication.TenantID, $Objectype.Trim(), $APIVersion, $Query
+        if($Manual){
+            $URI = $OwnQuery
+        }
+        elseif ($Objectype){
+            $URI = '{0}/{1}/{2}?api-version={3}{4}' -f $Instance.Graph, $Authentication.TenantID, $Objectype.Trim(), $APIVersion, $Query
+        }
+        else{
+            $URI = $false;
+        }
     }
     Process{
         try{
-            $requestHeader = @{
-                                "x-ms-version" = "2014-10-01";
-                                "Authorization" = $AuthHeader
-            }
-            Write-Progress @statusBar
-            ####Workaround for operation timed out ######
-            #https://social.technet.microsoft.com/wiki/contents/articles/29863.powershell-rest-api-invoke-restmethod-gotcha.aspx
-            $ServicePoint = [System.Net.ServicePointManager]::FindServicePoint($URI)
-            switch ($Method) { 
-                'GET'
-                {
-                    #$AllObjects = Invoke-RestMethod -Uri $URI -Headers $requestHeader -Method $Method -ContentType $ContentType -TimeoutSec 60
-                    $AllObjects = New-WebRequest -Url $URI -Headers $requestHeader `
-                                                 -Method $Method -Encoding $ContentType -UserAgent "Azucar" -Verbosity $Verbosity -WriteLog $WriteLog
+            if($URI){
+                $requestHeader = @{
+                                    "x-ms-version" = "2014-10-01";
+                                    "Authorization" = $AuthHeader
                 }
-                'POST'
-                {
-                    if($Data){
-                        #$AllObjects = Invoke-RestMethod -Uri $URI -Headers $requestHeader -Method $Method -ContentType $ContentType -Body $Data -TimeoutSec 60
+                Write-Progress @statusBar
+                ####Workaround for operation timed out ######
+                #https://social.technet.microsoft.com/wiki/contents/articles/29863.powershell-rest-api-invoke-restmethod-gotcha.aspx
+                $ServicePoint = [System.Net.ServicePointManager]::FindServicePoint($URI)
+                switch ($Method) { 
+                    'GET'
+                    {
+                        #$AllObjects = Invoke-RestMethod -Uri $URI -Headers $requestHeader -Method $Method -ContentType $ContentType -TimeoutSec 60
                         $AllObjects = New-WebRequest -Url $URI -Headers $requestHeader `
-                                                     -Method $Method -Encoding $ContentType -Data $Data `
-                                                     -UserAgent "Azucar" -Verbosity $Verbosity -WriteLog $WriteLog
+                                                     -Method $Method -Encoding $ContentType -UserAgent "Azucar" -Verbosity $Verbosity -WriteLog $WriteLog
+                    }
+                    'POST'
+                    {
+                        if($Data){
+                            #$AllObjects = Invoke-RestMethod -Uri $URI -Headers $requestHeader -Method $Method -ContentType $ContentType -Body $Data -TimeoutSec 60
+                            $AllObjects = New-WebRequest -Url $URI -Headers $requestHeader `
+                                                         -Method $Method -Encoding $ContentType -Data $Data `
+                                                         -UserAgent "Azucar" -Verbosity $Verbosity -WriteLog $WriteLog
+                        }
                     }
                 }
-            }
-            Write-AzucarMessage -Message ($message.GetRequestObjectMessage -f $Objectype) -Plugin "Get-AzSecAADObject" `
-                                     -IsDebug -Verbosity $Verbosity -WriteLog $WriteLog
-            ####close all the connections made to the host####
-            [void]$ServicePoint.CloseConnectionGroup("")
-            $tenantObjects = @()
-            $tenantObjects += $AllObjects.value
-            $moreObjects = $AllObjects 
-            if ($AllObjects.'odata.nextLink'){
-                $nextLink = $AllObjects.'odata.nextLink'
-                while ($nextLink -ne $null -and $nextLink.IndexOf('token=') -gt 0){
-                    $statusBar.CurrentOperation = ("Retrieving {0}" -f $Objectype.Trim())
-                    $statusBar.Status = $tenantObjects.Count
-                    Write-Progress @statusBar
-                    $nextLink = $nextLink.Substring($nextLink.IndexOf('token=') + 6)
-                    $URI = '{0}/{1}/{2}?api-version={3}&$top=999&$skiptoken={4}'`
-                    -f $Instance.Graph, $Authentication.TenantID, $Objectype.Trim(), $APIVersion, $nextLink
+                Write-AzucarMessage -Message ($message.GetRequestObjectMessage -f $Objectype) -Plugin "Get-AzSecAADObject" `
+                                         -IsDebug -Verbosity $Verbosity -WriteLog $WriteLog
+                ####close all the connections made to the host####
+                [void]$ServicePoint.CloseConnectionGroup("")
+                $tenantObjects = @()
+                $tenantObjects += $AllObjects.value
+                $moreObjects = $AllObjects 
+                if ($AllObjects -AND $AllObjects.'odata.nextLink'){
+                    $nextLink = $AllObjects.'odata.nextLink'
+                    while ($nextLink -ne $null -and $nextLink.IndexOf('token=') -gt 0){
+                        $statusBar.CurrentOperation = ("Retrieving {0}" -f $Objectype.Trim())
+                        $statusBar.Status = $tenantObjects.Count
+                        Write-Progress @statusBar
+                        $nextLink = $nextLink.Substring($nextLink.IndexOf('token=') + 6)
+                        $URI = '{0}/{1}/{2}?api-version={3}&$top=999&$skiptoken={4}'`
+                        -f $Instance.Graph, $Authentication.TenantID, $Objectype.Trim(), $APIVersion, $nextLink
                
-                    ####Workaround for operation timed out ######
-                    #https://social.technet.microsoft.com/wiki/contents/articles/29863.powershell-rest-api-invoke-restmethod-gotcha.aspx
-                    $ServicePoint = [System.Net.ServicePointManager]::FindServicePoint($URI)
-                    #$NextPage = Invoke-RestMethod -Method Get -Uri $URI -Headers $requestHeader -TimeoutSec 60
-                    $NextPage = New-WebRequest -Method Get -Url $URI -Headers $requestHeader `
-                                               -UserAgent "Azucar" -Verbosity $Verbosity -WriteLog $WriteLog
-                    ####close all the connections made to the host####
-                    [void]$ServicePoint.CloseConnectionGroup("")
-                    $tenantObjects += $NextPage.value
-                    $nextLink = $nextPage.'odata.nextLink'
+                        ####Workaround for operation timed out ######
+                        #https://social.technet.microsoft.com/wiki/contents/articles/29863.powershell-rest-api-invoke-restmethod-gotcha.aspx
+                        $ServicePoint = [System.Net.ServicePointManager]::FindServicePoint($URI)
+                        #$NextPage = Invoke-RestMethod -Method Get -Uri $URI -Headers $requestHeader -TimeoutSec 60
+                        $NextPage = New-WebRequest -Method Get -Url $URI -Headers $requestHeader `
+                                                   -UserAgent "Azucar" -Verbosity $Verbosity -WriteLog $WriteLog
+                        ####close all the connections made to the host####
+                        [void]$ServicePoint.CloseConnectionGroup("")
+                        $tenantObjects += $NextPage.value
+                        $nextLink = $nextPage.'odata.nextLink'
+                    }
                 }
             }
         }
@@ -534,7 +563,6 @@ Function Get-AzSecRMObject{
                                                      -UserAgent "Azucar" -Verbosity $Verbosity -WriteLog $WriteLog
                     }
             }
-            
             ####close all the connections made to the host####
             [void]$ServicePoint.CloseConnectionGroup("")
             if($Objectype){

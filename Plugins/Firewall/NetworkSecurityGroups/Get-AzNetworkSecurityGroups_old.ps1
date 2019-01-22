@@ -82,7 +82,6 @@
                     $SecurityRule | Add-Member -type NoteProperty -name SourcePortRange -value $sr.properties.sourcePortRange
                     $SecurityRule | Add-Member -type NoteProperty -name DestinationPortRange -value $sr.properties.DestinationPortRange
                     $SecurityRule | Add-Member -type NoteProperty -name SourceAddressPrefix -value $sr.properties.sourceAddressPrefix
-                    $SecurityRule | Add-Member -type NoteProperty -name DestinationAddressPrefix -value $sr.properties.DestinationAddressPrefix
                     $SecurityRule | Add-Member -type NoteProperty -name Access -value $sr.properties.access
                     $SecurityRule | Add-Member -type NoteProperty -name Priority -value $sr.properties.priority
                     $SecurityRule | Add-Member -type NoteProperty -name direction -value $sr.properties.direction  
@@ -110,7 +109,6 @@
                     $DefaultSecurityRule | Add-Member -type NoteProperty -name SourcePortRange -value $dsr.properties.sourcePortRange
                     $DefaultSecurityRule | Add-Member -type NoteProperty -name DestinationPortRange -value $dsr.properties.DestinationPortRange
                     $DefaultSecurityRule | Add-Member -type NoteProperty -name SourceAddressPrefix -value $dsr.properties.sourceAddressPrefix
-                    $DefaultSecurityRule | Add-Member -type NoteProperty -name DestinationAddressPrefix -value $dsr.properties.DestinationAddressPrefix
                     $DefaultSecurityRule | Add-Member -type NoteProperty -name Access -value $dsr.properties.access
                     $DefaultSecurityRule | Add-Member -type NoteProperty -name Priority -value $dsr.properties.priority
                     $DefaultSecurityRule | Add-Member -type NoteProperty -name direction -value $dsr.properties.direction

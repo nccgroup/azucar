@@ -52,8 +52,7 @@
                                        -Provider $AzureSecStatus.Provider -Objectype "securityStatuses" `
                                        -APIVersion $AzureSecStatus.APIVersion -Verbosity $Verbosity -WriteLog $WriteLog
         
-        
-        $AllVMs = $AllStatus | Where-Object {$_.properties.type -eq 'VirtualMachine'}
+        $AllVMs = $AllStatus | Where-Object {$_.properties.type -eq 'VirtualMachine' -or $_.properties.type -eq 'ClassicVirtualMachine'}
         #Get primary object
         $AllMissingPatches = @()
         if($AllVMs){
