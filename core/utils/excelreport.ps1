@@ -47,7 +47,7 @@
         if($AllData -and $ExcelSettings -and $TableFormatting){
             Write-Host ($message.EXCELTaskCreateReportMessage -f $TenantID) -ForegroundColor Magenta
             #Create Excel object
-            $isDebug = [System.Convert]::ToBoolean($ExcelSettings["Debug"])
+            $isDebug = [System.Convert]::ToBoolean($ExcelSettings.excelSettings.Debug)
             Create-Excel -ExcelDebugging $isDebug
             if($ExcelSettings){
                 # Create About Page
@@ -130,11 +130,11 @@
                 }
             }
             #Add some charts to Excel
-            $RBAC = $AllData | ? { $_.psobject.Properties.Name -eq "RbacUsers" }
+            $RBAC = $AllData | ? { $_.psobject.Properties.Name -eq "azure_rbac_users" }
             if($RBAC){
                 $RBACChart = @{}
                 #Group for each object for count values
-                $RBAC.RbacUsers.Data | Group-Object RoleName | ForEach-Object {$RBACChart.Add($_.Name,@($_.Count))}
+                $RBAC.azure_rbac_users.Data | Group-Object RoleName | ForEach-Object {$RBACChart.Add($_.Name,@($_.Count))}
                 if($RBACChart){
                     #Prepare Chart
                     $Data =  $RBACChart
@@ -161,11 +161,11 @@
                 }
             }
             #Add some charts to Excel
-            $Classic = $AllData | ? { $_.psobject.Properties.Name -eq "ClassicAdmins" }
+            $Classic = $AllData | ? { $_.psobject.Properties.Name -eq "azure_classic_admins" }
             if($Classic){
                 $ClassicChart = @{}
                 #Group for each object for count values
-                $Classic.ClassicAdmins.Data | Group-Object role | ForEach-Object {$ClassicChart.Add($_.Name,@($_.Count))}
+                $Classic.azure_classic_admins.Data | Group-Object role | ForEach-Object {$ClassicChart.Add($_.Name,@($_.Count))}
                 if($ClassicChart){
                     #Prepare Chart
                     $Data =  $ClassicChart
@@ -192,11 +192,11 @@
                 }
             }
             #Add Baseline Data chart
-            $BaselineStatus = $AllData | ? { $_.psobject.Properties.Name -eq "SecurityBaseline" }
+            $BaselineStatus = $AllData | ? { $_.psobject.Properties.Name -eq "azure_vm_security_baseline" }
             if($BaselineStatus){
                 #Group for each object for count values
                 $BaselineStats = @{}
-                $SecurityBaselineStats = $BaselineStatus.SecurityBaseline.Data | Group-Object ServerName -AsHashTable
+                $SecurityBaselineStats = $BaselineStatus.azure_vm_security_baseline.Data | Group-Object ServerName -AsHashTable
                 if($SecurityBaselineStats){
                     foreach($rule in $SecurityBaselineStats.GetEnumerator()){
                         $Critical = 0
@@ -247,7 +247,7 @@
                 }
             }
             #Add Missing Patches
-            $MissingPatches = $AllData | ? { $_.psobject.Properties.Name -eq "MissingPatches" }
+            $MissingPatches = $AllData | ? { $_.psobject.Properties.Name -eq "azure_vm_missing_patches" }
             if($MissingPatches){
                 #Group for each object for count values
                 $KBStats = @{}
@@ -312,14 +312,14 @@
                 }
             }
             #Add Dashboard
-            $VM = $AllData | ? { $_.psobject.Properties.Name -eq "VirtualMachines" }
+            $VM = $AllData | ? { $_.psobject.Properties.Name -eq "azure_virtual_machines" }
             $Y = 1
             $X = 1
             $newSheet = $false
             if($VM){
                 $VMStats = @{}
                 #Group for each object for count values
-                $VM.VirtualMachines.Data | Group-Object encryptionsettingsenabled | ForEach-Object {$VMStats.Add($_.Name,@($_.Count))}
+                $VM.azure_virtual_machines.Data | Group-Object encryptionsettingsenabled | ForEach-Object {$VMStats.Add($_.Name,@($_.Count))}
                 if($VMStats){
                     #Prepare Chart
                     $Data =  $VMStats
@@ -348,15 +348,15 @@
                 }
             }
             #Add Databases
-            $AllDatabases = $AllData | ? { $_.psobject.Properties.Name -eq "SQLDatabases" }
+            $AllDatabases = $AllData | ? { $_.psobject.Properties.Name -eq "azure_sql_databases" }
             if($AllDatabases){
                 $TDEStats = @{}
                 $Encryption = @{}
                 $Auditing = @{}
                 #Group for each object for count values
-                $AllDatabases.SQLDatabases.Data | ? {$_.DatabaseName -ne "master"} | Group-Object threatDetectionPolicy | ForEach-Object {$TDEStats.Add($_.Name,@($_.Count))}
-                $AllDatabases.SQLDatabases.Data | ? {$_.DatabaseName -ne "master"} | Group-Object databaseEncryptionStatus | ForEach-Object {$Encryption.Add($_.Name,@($_.Count))}
-                $AllDatabases.SQLDatabases.Data | ? {$_.DatabaseName -ne "master"} | Group-Object databaseAuditingState | ForEach-Object {$Auditing.Add($_.Name,@($_.Count))}
+                $AllDatabases.azure_sql_databases.Data | ? {$_.DatabaseName -ne "master"} | Group-Object threatDetectionPolicy | ForEach-Object {$TDEStats.Add($_.Name,@($_.Count))}
+                $AllDatabases.azure_sql_databases.Data | ? {$_.DatabaseName -ne "master"} | Group-Object databaseEncryptionStatus | ForEach-Object {$Encryption.Add($_.Name,@($_.Count))}
+                $AllDatabases.azure_sql_databases.Data | ? {$_.DatabaseName -ne "master"} | Group-Object databaseAuditingState | ForEach-Object {$Auditing.Add($_.Name,@($_.Count))}
                 if($TDEStats){
                     #Prepare Chart
                     $Data =  $TDEStats
@@ -455,29 +455,64 @@
             }
         }
         #Add Storage Accounts
-        $StorageAccounts = $AllData | ? { $_.psobject.Properties.Name -eq "StorageAccounts" }
+        $StorageAccounts = $AllData | ? { $_.psobject.Properties.Name -eq "azure_storage_accounts" }
         if($StorageAccounts){
-            $StorageStats = @{}
+            $StorageBlobStats = @{}
+            $StorageFileStats = @{}
             #Group for each object for count values
-            $StorageAccounts.StorageAccounts.Data | Group-Object isEncrypted | ForEach-Object {$StorageStats.Add($_.Name,@($_.Count))}
-            if($StorageStats){
+            $StorageAccounts.azure_storage_accounts.Data | Group-Object isBlobEncrypted | ForEach-Object {$StorageBlobStats.Add($_.Name,@($_.Count))}
+            $StorageAccounts.azure_storage_accounts.Data | Group-Object isFileEncrypted | ForEach-Object {$StorageFileStats.Add($_.Name,@($_.Count))}
+            if($StorageBlobStats){
                 #Prepare Chart
-                $Data =  $StorageStats
+                $Data =  $StorageBlobStats
                 $ShowHeaders = $True
                 $ShowTotals = $True
-                $MyHeaders = @('Storage Account Encryption','Number of StorageAccounts')
+                $MyHeaders = @('Storage Account Blob Encryption','Number of StorageAccounts')
                 if($newSheet){$isnewSheet = [System.Convert]::ToBoolean($false);$Title=$null}
                 else{
                     $Title = "Azucar Dashboard"
                     $isnewSheet = [System.Convert]::ToBoolean($True)
                 }
-                $TableName = "StorageAccount chart"
+                $TableName = "StorageAccount Blob chart"
                 $Position = @($X,$Y)
                 $addNewChart = [System.Convert]::ToBoolean($True)
                 $ChartType = "xlColumnClustered"
                 $HasDatatable = [System.Convert]::ToBoolean($True)
                 $chartStyle = 34
-                $chartTitle = "Storage Account Encryption Settings"
+                $chartTitle = "Storage Account Blob Encryption Settings"
+                #Create new table with data
+                Create-Table -ShowTotals $ShowTotals -ShowHeaders $ShowHeaders -Data $Data `
+                            -SheetName $Title -TableTitle $TableName -Position $Position `
+                            -Header $MyHeaders -isNewSheet $isnewSheet -addNewChart $addNewChart `
+                            -ChartType $ChartType -ChartTitle $chartTitle `
+                            -ChartStyle $chartStyle -HasDataTable $HasDatatable `
+                            -HeaderStyle $Header | Out-Null
+
+                $newSheet = $true
+                $Y+=5
+                if($Y -ge 11){
+                    $X += 17
+                    $Y = 1
+                }
+            }
+            if($StorageFileStats){
+                #Prepare Chart
+                $Data =  $StorageFileStats
+                $ShowHeaders = $True
+                $ShowTotals = $True
+                $MyHeaders = @('Storage Account File Encryption','Number of StorageAccounts')
+                if($newSheet){$isnewSheet = [System.Convert]::ToBoolean($false);$Title=$null}
+                else{
+                    $Title = "Azucar Dashboard"
+                    $isnewSheet = [System.Convert]::ToBoolean($True)
+                }
+                $TableName = "StorageAccount File chart"
+                $Position = @($X,$Y)
+                $addNewChart = [System.Convert]::ToBoolean($True)
+                $ChartType = "xlColumnClustered"
+                $HasDatatable = [System.Convert]::ToBoolean($True)
+                $chartStyle = 34
+                $chartTitle = "Storage Account File Encryption Settings"
                 #Create new table with data
                 Create-Table -ShowTotals $ShowTotals -ShowHeaders $ShowHeaders -Data $Data `
                             -SheetName $Title -TableTitle $TableName -Position $Position `

@@ -29,6 +29,62 @@ Function New-WebRequest{
 
             )
         Begin{
+            Function _New-WebResponseDetailedMessage{
+                Param (
+                    [parameter(ValueFromPipeline = $True,ValueFromPipeLineByPropertyName = $True)]
+                    [Object]$response,
+
+                    [Parameter(Mandatory=$false, HelpMessage="Save exception in log file")]
+	                [Bool] $WriteLog,
+
+                    [parameter(ValueFromPipeline = $True,ValueFromPipeLineByPropertyName = $True)]
+                    [System.Collections.Hashtable]$Verbosity
+                )
+                
+                if($response -is [System.Net.HttpWebResponse]){
+                    #Response Headers
+                    Write-AzucarMessage -Message ("Response-Headers: {0}" -f $response.Headers) -Plugin "New-WebRequest" -IsDebug -Verbosity $Verbosity -WriteLog $WriteLog
+                    #Status Code
+                    Write-AzucarMessage -Message ("Status-Code: {0}" -f [int]$response.StatusCode) -Plugin "New-WebRequest" -IsDebug -Verbosity $Verbosity -WriteLog $WriteLog
+                    #Server Header
+                    Write-AzucarMessage -Message ("Response-Uri: {0}" -f $response.ResponseUri) -Plugin "New-WebRequest" -IsDebug -Verbosity $Verbosity -WriteLog $WriteLog
+                }
+                else{
+                    Write-AzucarMessage -Message ("Unknown WebResponse object: {0}" -f $response) -Plugin "New-WebRequest" -IsDebug -Verbosity $Verbosity -WriteLog $WriteLog
+                }
+            }
+
+            Function _New-WebRequestException{
+                Param (
+                    [parameter(ValueFromPipeline = $True,ValueFromPipeLineByPropertyName = $True)]
+                    [Object]$Exception,
+
+                    [Parameter(Mandatory=$false, HelpMessage="Save exception in log file")]
+	                [Bool] $WriteLog,
+
+                    [parameter(ValueFromPipeline = $True,ValueFromPipeLineByPropertyName = $True)]
+                    [System.Collections.Hashtable]$Verbosity
+                )
+                if($Exception.Exception.Response.StatusCode){
+                    $StatusCode = $Exception.Exception.Response.StatusCode
+                    $errorMessage = ($Exception.Exception.Message).ToString().Trim();
+                    #Get Exception Body Message
+                    $reader = [System.IO.StreamReader]::new($Exception.Exception.Response.GetResponseStream())
+                    $reader.BaseStream.Position = 0
+                    $reader.DiscardBufferedData()
+                    $responseBody = $reader.ReadToEnd()
+                    Write-AzucarMessage -Message ("[{0}]: {1}" -f $StatusCode, $errorMessage) `
+                                        -Plugin "New-WebRequest" -IsDebug -Verbosity $Verbosity `
+                                        -WriteLog $WriteLog
+
+                    Write-AzucarMessage -Message ("[Url Error]: {0}" -f $Url) -Plugin "New-WebRequest" `
+                                        -IsDebug -Verbosity $Verbosity -WriteLog $WriteLog
+
+                    Write-AzucarMessage -Message ("[Detailed error message]: {0}" -f $responseBody) `
+                                        -Plugin "New-WebRequest" -IsDebug `
+                                        -Verbosity $Verbosity -WriteLog $WriteLog
+               }
+            }
             Function _ConvertTo-XML{
                 Param (
                     [parameter(ValueFromPipeline = $True,ValueFromPipeLineByPropertyName = $True)]
@@ -115,7 +171,7 @@ Function New-WebRequest{
                     $request = [System.Net.WebRequest]::Create($Url)
                 }
                 catch{
-                    Convert-Exception -MyError $_ -FunctionName "New-WebRequest" -WriteLog $WriteLog
+                    _New-WebRequestException -Exception $_ -WriteLog $WriteLog -Verbosity $Verbosity
                 }
                 if($request -is [System.Net.HttpWebRequest]){
                     #Establish Request Method
@@ -154,17 +210,13 @@ Function New-WebRequest{
                         #Get Stream Reader and store into a RAW var
                         [System.IO.StreamReader] $sr = New-Object System.IO.StreamReader -argumentList $rs     
                         [String]$RAW = $sr.ReadToEnd()
-                        <#
-                        #Response Headers
-                        Write-AzucarMessage -Message ("Respònse-Headers: {0}" -f $response.Headers) -Plugin "New-WebRequest" -IsDebug -Verbosity $Verbosity -WriteLog $WriteLog
-                        #Status Code
-                        Write-AzucarMessage -Message ("Status-Code: {0}" -f $response.StatusCode) -Plugin "New-WebRequest" -IsDebug -Verbosity $Verbosity -WriteLog $WriteLog
-                        #Server Header
-                        Write-AzucarMessage -Message ("Server-Header: {0}" -f $response.Server) -Plugin "New-WebRequest" -IsDebug -Verbosity $Verbosity -WriteLog $WriteLog
-                        #>
+                        #catch response#
+                        #_New-WebResponseDetailedMessage -response $response -WriteLog $WriteLog -Verbosity $Verbosity
                     }
                     ## Catch errors from the server (404, 500, 501, etc.)
                     catch [Net.WebException]{
+                        _New-WebRequestException -Exception $_ -WriteLog $WriteLog -Verbosity $Verbosity
+                        <#
                         #Convert Exception
                         Convert-Exception -MyError $_ -FunctionName "New-WebRequest" -WriteLog $WriteLog
                         $ErrorRecord = New-Object System.Management.Automation.ErrorRecord(
@@ -181,6 +233,7 @@ Function New-WebRequest{
                         $reader.DiscardBufferedData()
                         $responseBody = $reader.ReadToEnd()
                         Write-AzucarMessage -Message $responseBody -Plugin "New-WebRequest" -IsDebug -Verbosity $Verbosity -WriteLog $WriteLog
+                        #>
                     }
                 }
         }
@@ -242,7 +295,8 @@ Function Get-AzSecAADLinkedObject{
             $statusBar.Status = $startCon
 
             #Get Auth Header and create URI
-            $AuthHeader = $Authentication.CreateAuthorizationHeader()
+            #$AuthHeader = $Authentication.Result.CreateAuthorizationHeader()
+            $AuthHeader = ("Bearer {0}" -f $Authentication.AccessToken)
             if($GetLinks){
                 $URI = '{0}/{1}/{2}/{3}/$links/{4}?api-version={5}'`
                        -f $Instance.Graph, $Authentication.TenantID, $Objectype.Trim(), $ObjectId, $Relationship, $APIVersion
@@ -377,7 +431,8 @@ Function Get-AzSecAADObject{
         [String]$startCon = ("Starting Azure Rest Query on {0} to retrieve {1}" -f $Instance.Graph, $Objectype.Trim())
         $statusBar.Status = $startCon
         
-        $AuthHeader = $Authentication.CreateAuthorizationHeader()
+        #$AuthHeader = $Authentication.Result.CreateAuthorizationHeader()
+        $AuthHeader = ("Bearer {0}" -f $Authentication.AccessToken)
         if($Manual){
             $URI = $OwnQuery
         }
@@ -416,8 +471,8 @@ Function Get-AzSecAADObject{
                         }
                     }
                 }
-                Write-AzucarMessage -Message ($message.GetRequestObjectMessage -f $Objectype) -Plugin "Get-AzSecAADObject" `
-                                         -IsDebug -Verbosity $Verbosity -WriteLog $WriteLog
+                Write-AzucarMessage -Message ($message.GetRequestObjectMessage -f $URI) -Plugin "Get-AzSecAADObject" `
+                                    -IsDebug -Verbosity $Verbosity -WriteLog $WriteLog
                 ####close all the connections made to the host####
                 [void]$ServicePoint.CloseConnectionGroup("")
                 $tenantObjects = @()
@@ -520,7 +575,8 @@ Function Get-AzSecRMObject{
              return
         }
         #Get Authorization Header
-        $AuthHeader = $Authentication.CreateAuthorizationHeader()
+        #$AuthHeader = $Authentication.Result.CreateAuthorizationHeader()
+        $AuthHeader = ("Bearer {0}" -f $Authentication.AccessToken)
         if($Provider -and $ResourceGroup){
             $URI = '{0}/subscriptions/{1}/resourceGroups/{2}/providers/{3}/{4}?api-version={5}{6}' `
                    -f $Instance.ResourceManager, $Authentication.subscriptionId,`
@@ -535,15 +591,11 @@ Function Get-AzSecRMObject{
             $URI = $OwnQuery
         }
         else{
-            $URI = '{0}/subscriptions/{1}/{2}?api-version={3}{4}' -f $Instance.ResourceManager, $Authentication.subscriptionId,`	
-                                                                      $Objectype.Trim(), $APIVersion, $Query
+            $URI = '{0}/subscriptions/{1}/{2}?api-version={3}{4}' -f $Instance.ResourceManager, $Authentication.subscriptionId, $Objectype.Trim(), $APIVersion, $Query
         }
     }
     Process{
-        $requestHeader = @{
-                            "x-ms-version" = "2014-10-01";
-                            "Authorization" = $AuthHeader
-        }
+        if($URI){$requestHeader = @{"x-ms-version" = "2014-10-01";"Authorization" = $AuthHeader}}       
         #Perform query
         ####Workaround for operation timed out ######
         #https://social.technet.microsoft.com/wiki/contents/articles/29863.powershell-rest-api-invoke-restmethod-gotcha.aspx
@@ -648,15 +700,13 @@ Function Get-AzSecSMObject{
         }
         [String]$startCon = ("Starting Azure Service Management Rest Query on {0} to retrieve {1}" -f $Instance.ServiceManagement, $ObjectType)
         $statusBar.Status = $startCon
-        $AuthHeader = $Authentication.CreateAuthorizationHeader()
+        #$AuthHeader = $Authentication.Result.CreateAuthorizationHeader()
+        $AuthHeader = ("Bearer {0}" -f $Authentication.AccessToken)
         $URI = '{0}/{1}/services/{2}' -f $Instance.ServiceManagement, $Authentication.subscriptionId, $ObjectType
     }
     Process{
         try{
-            $requestHeader = @{
-                                "x-ms-version" = "2014-10-01";
-                                "Authorization" = $AuthHeader
-            }
+            if($URI){$requestHeader = @{"x-ms-version" = "2014-10-01";"Authorization" = $AuthHeader}}
             Write-Progress @statusBar
             ####Workaround for operation timed out ######
             #https://social.technet.microsoft.com/wiki/contents/articles/29863.powershell-rest-api-invoke-restmethod-gotcha.aspx

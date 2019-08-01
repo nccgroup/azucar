@@ -38,6 +38,9 @@
         #Import Localized data
         $LocalizedDataParams = $AzureObject.LocalizedDataParams
         Import-LocalizedData @LocalizedDataParams;
+        #Import Global vars
+        $LogPath = $AzureObject.LogPath
+        Set-Variable LogPath -Value $LogPath -Scope Global
 
         $Section = $AzureObject.AzureSection
     }
@@ -88,7 +91,7 @@
             $MyAzureBots | Add-Member -type NoteProperty -name Data -value $allAzureBots
             #Add data to object
             if($MyAzureBots){
-                $ReturnPluginObject | Add-Member -type NoteProperty -name AzureBots -value $MyAzureBots
+                $ReturnPluginObject | Add-Member -type NoteProperty -name azure_bots -value $MyAzureBots
             }
         }
         else{

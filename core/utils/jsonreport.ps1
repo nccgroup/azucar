@@ -48,8 +48,8 @@
                 Write-Verbose ($message.FolderReportMessageCreation -f $target) @VerboseOptions
                 return $target}
             else{
-            Write-Verbose ($message.DirectoryAlreadyExistsWarning -f $target) @VerboseOptions
-            return $target
+                Write-Verbose ($message.DirectoryAlreadyExistsWarning -f $target) @VerboseOptions
+                return $target
             }
        }
        ##End of function
@@ -75,6 +75,7 @@
                                 }
                             }
                             catch{
+                                Write-Host ("Error in {0}" -f $query.Name) -ForegroundColor Yellow
                                 $ErrorRecord = New-Object System.Management.Automation.ErrorRecord(
                                             (New-Object Exception($_.Exception)),
                                             $null,

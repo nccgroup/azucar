@@ -36,6 +36,9 @@
         #Import Localized data
         $LocalizedDataParams = $AzureObject.LocalizedDataParams
         Import-LocalizedData @LocalizedDataParams;
+        #Import Global vars
+        $LogPath = $AzureObject.LogPath
+        Set-Variable LogPath -Value $LogPath -Scope Global
     }
     Process{
         $PluginName = $AzureObject.PluginName
@@ -54,7 +57,7 @@
         $VMs = Get-AzSecRMObject -Instance $Instance -Authentication $RMAuth `
                                  -Provider $AzureVMConfig.Provider -Objectype "virtualmachines" `
                                  -APIVersion $AzureVMConfig.APIVersion -Verbosity $Verbosity -WriteLog $WriteLog
-        if($Vms){
+        if($Vms.Count -gt 0){
             foreach($vm in $VMs){
                 $AzureVM = New-Object -TypeName PSCustomObject
                 $AzureVM | Add-Member -type NoteProperty -name VMName -value $vm.name
@@ -74,26 +77,30 @@
                     $AzureVM | Add-Member -type NoteProperty -name encryptionsettingsenabled -value "DisabledFromKeyVault"
                 }
                 $NetworkInterface = $vm.properties.networkprofile.networkInterfaces.id
-                Write-AzucarMessage -WriteLog $WriteLog -Message ("Get Network Interfaces for {0}..." -f $vm.name) `
-                                    -Plugin $PluginName -Verbosity $Verbosity -IsVerbose
+                if($NetworkInterface){
+                    Write-AzucarMessage -WriteLog $WriteLog -Message ("Get Network Interfaces for {0}..." -f $vm.name) `
+                                        -Plugin $PluginName -Verbosity $Verbosity -IsVerbose
                 
-                $URI = ('{0}{1}?api-version={2}' -f $Instance.ResourceManager, $NetworkInterface, '2016-03-30')
-                #Perform Query
-                $Result = Get-AzSecRMObject -Manual -OwnQuery $URI -Authentication $RMAuth -Verbosity $Verbosity
-                if($Result.name){
-                    $AzureVM | Add-Member -type NoteProperty -name InterfaceName -value $Result.name
-                    $AzureVM | Add-Member -type NoteProperty -name LocalIPAddress -value $Result.properties.ipConfigurations.properties.privateIPAddress  
-                    $AzureVM | Add-Member -type NoteProperty -name MACAddress -value $Result.properties.macAddress 
-                    $AzureVM | Add-Member -type NoteProperty -name IPForwardingEnabled -value $Result.properties.enableIPForwarding
-                    $PublicIPEndPoint = $Result.properties.ipConfigurations.properties.publicIPAddress.id
-                    $URI =  ('{0}{1}?api-version={2}' -f $Instance.ResourceManager, $PublicIPEndPoint, '2016-12-01')
-                    Write-AzucarMessage -WriteLog $WriteLog -Message ("Get Public IPAddress for {0}..." -f $vm.name) `
-                                    -Plugin $PluginName -Verbosity $Verbosity -IsVerbose
+                    $URI = ('{0}{1}?api-version={2}' -f $Instance.ResourceManager, $NetworkInterface, '2016-03-30')
+                    #Perform Query
+                    $Result = Get-AzSecRMObject -Manual -OwnQuery $URI -Authentication $RMAuth -Verbosity $Verbosity
+                    if($Result.name){
+                        $AzureVM | Add-Member -type NoteProperty -name InterfaceName -value $Result.name
+                        $AzureVM | Add-Member -type NoteProperty -name LocalIPAddress -value $Result.properties.ipConfigurations.properties.privateIPAddress  
+                        $AzureVM | Add-Member -type NoteProperty -name MACAddress -value $Result.properties.macAddress 
+                        $AzureVM | Add-Member -type NoteProperty -name IPForwardingEnabled -value $Result.properties.enableIPForwarding
+                        $PublicIPEndPoint = $Result.properties.ipConfigurations.properties.publicIPAddress.id
+                        if($PublicIPEndPoint){
+                            $URI =  ('{0}{1}?api-version={2}' -f $Instance.ResourceManager, $PublicIPEndPoint, '2016-12-01')
+                            Write-AzucarMessage -WriteLog $WriteLog -Message ("Get Public IPAddress for {0}..." -f $vm.name) `
+                                            -Plugin $PluginName -Verbosity $Verbosity -IsVerbose
                     
-                    $PublicIP = Get-AzSecRMObject -Manual -OwnQuery $URI -Authentication $RMAuth -Verbosity $Verbosity
-                    if($PublicIP.properties){
-                        $AzureVM | Add-Member -type NoteProperty -name PublicIPAddress -value $PublicIP.properties.ipAddress
-                        $AzureVM | Add-Member -type NoteProperty -name publicIPAllocationMethod -value $PublicIP.properties.publicIPAllocationMethod                       
+                            $PublicIP = Get-AzSecRMObject -Manual -OwnQuery $URI -Authentication $RMAuth -Verbosity $Verbosity
+                            if($PublicIP.properties){
+                                $AzureVM | Add-Member -type NoteProperty -name PublicIPAddress -value $PublicIP.properties.ipAddress
+                                $AzureVM | Add-Member -type NoteProperty -name publicIPAllocationMethod -value $PublicIP.properties.publicIPAllocationMethod                       
+                            }
+                        }
                     }
                 }
                 #Decorate Object
@@ -115,7 +122,7 @@
             $VirtualMachines | Add-Member -type NoteProperty -name Data -value $AllVMs
             #Return Object
             if($VirtualMachines){
-                $ReturnPluginObject | Add-Member -type NoteProperty -name VirtualMachines -value $VirtualMachines
+                $ReturnPluginObject | Add-Member -type NoteProperty -name azure_virtual_machines -value $VirtualMachines
             }
         }
         else{

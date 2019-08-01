@@ -36,6 +36,9 @@
         #Import Localized data
         $LocalizedDataParams = $AzureObject.LocalizedDataParams
         Import-LocalizedData @LocalizedDataParams;
+        #Import Global vars
+        $LogPath = $AzureObject.LogPath
+        Set-Variable LogPath -Value $LogPath -Scope Global
 
         #Get Group Members
         Function Get-AzureGroupMembers{
@@ -170,7 +173,7 @@
                 $RBACUsers | Add-Member -type NoteProperty -name Data -value $AllRBACUsers
                 #Add data to object
                 if($RBACUsers){
-                    $ReturnPluginObject | Add-Member -type NoteProperty -name RbacUsers -value $RBACUsers
+                    $ReturnPluginObject | Add-Member -type NoteProperty -name azure_rbac_users -value $RBACUsers
                 }
             }
             else{
@@ -187,7 +190,7 @@
                 $ClassicAdmins | Add-Member -type NoteProperty -name Data -value $AllClassicAdmins
                 #Add data to object
                 if($ClassicAdmins){
-                    $ReturnPluginObject | Add-Member -type NoteProperty -name ClassicAdmins -value $ClassicAdmins
+                    $ReturnPluginObject | Add-Member -type NoteProperty -name azure_classic_admins -value $ClassicAdmins
                 }
             }
             else{

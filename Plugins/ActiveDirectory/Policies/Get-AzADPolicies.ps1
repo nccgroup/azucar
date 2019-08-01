@@ -37,6 +37,9 @@
         #Import Localized data
         $LocalizedDataParams = $AzureObject.LocalizedDataParams
         Import-LocalizedData @LocalizedDataParams;
+        #Import Global vars
+        $LogPath = $AzureObject.LogPath
+        Set-Variable LogPath -Value $LogPath -Scope Global
     }
     Process{
         $PluginName = $AzureObject.PluginName
@@ -52,6 +55,17 @@
         $URI = ("{0}myorganization/policies?api-version={1}" -f $Instance.Graph, $AADConfig.APIVersion)
         $AllPolicies = Get-AzSecAADObject -OwnQuery $URI -Manual -Authentication $AADAuth `
                                           -Verbosity $Verbosity -WriteLog $WriteLog
+        #Convert definition and key credentials
+        if($AllPolicies){
+            foreach ($policy in $AllPolicies){
+                if($policy.definition){
+                    $policy.definition = (@($policy.definition) -join ',')
+                }
+                if($policy.keyCredentials){
+                    $policy.keyCredentials = (@($policy.keyCredentials) -join ',')
+                }
+            }
+        }
     }
     End{
         if($AllPolicies){
@@ -64,7 +78,7 @@
             $AllAADPolicies | Add-Member -type NoteProperty -name Data -value $AllPolicies
             #Add Users data to object
             if($AllPolicies){
-                $ReturnPluginObject | Add-Member -type NoteProperty -name DomainPolicies -value $AllPolicies
+                $ReturnPluginObject | Add-Member -type NoteProperty -name azure_domain_policies -value $AllAADPolicies
             }
         }
         else{

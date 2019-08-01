@@ -37,6 +37,9 @@
         #Import Localized data
         $LocalizedDataParams = $AzureObject.LocalizedDataParams
         Import-LocalizedData @LocalizedDataParams;
+        #Import Global vars
+        $LogPath = $AzureObject.LogPath
+        Set-Variable LogPath -Value $LogPath -Scope Global
     }
     Process{
         $PluginName = $AzureObject.PluginName
@@ -93,7 +96,7 @@
             $PostgreDBFWRules | Add-Member -type NoteProperty -name Data -value $AllPostgreSQLFWRules
             #Add data to object
             if($PostgreDBFWRules){
-                $ReturnPluginObject | Add-Member -type NoteProperty -name PostgreSQLDatabaseFirewall -value $PostgreDBFWRules
+                $ReturnPluginObject | Add-Member -type NoteProperty -name azure_postgre_sql_database_firewall -value $PostgreDBFWRules
             }
         }
         else{

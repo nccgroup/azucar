@@ -4,6 +4,10 @@ Azucar is a multi-threaded plugin-based tool to help assess the security of Azur
 
 The script <b>will not change or modify</b> any asset deployed in the Azure subscription.
 
+<h1>Operating System Support</h1>
+
+As the script uses the .NET ADAL library for for authenticating the user and calling the REST APIs, only Windows OS are currently supported.  
+
 <h1>Features</h1>
 
 * Return a number of attributes on computers, users, groups, contacts, events, etc... from an Azure Active Directory
@@ -11,7 +15,7 @@ The script <b>will not change or modify</b> any asset deployed in the Azure subs
 * Multi-Threading support
 * Plugin Support
 * The following assets are supported by Azucar:
-    * Azure SQL Databases
+    * Azure SQL Databases, including MySQL and PostgreSQL databases
 	* Azure Active Directory
 	* Storage Accounts
 	* Classic Virtual Machines
@@ -25,6 +29,7 @@ The script <b>will not change or modify</b> any asset deployed in the Azure subs
 	* Network Security Groups
 	* Classic Endpoints
 	* Azure Security Alerts
+	* Azure KeyVault
 
 <h1>Screenshots</h1>
 
@@ -192,13 +197,36 @@ This example retrieves information of an Azure Tenant and print results. The scr
 .\Azucar.ps1 -ExportTo PRINT | Format-List
 ```
 
-This example gets information of an Azure Tenant and export data driven to CSV, JSON, XML and Excel format into Reports folder. The script will try to connect using the ADAL library, and if no credential passed, the script will try to connect using the bearer token for logged user
+This example will retrieve information of an Azure Tenant and print results to a local variable. The script will try to connect using the ADAL library, and if no credential passed, the script will try to connect using the bearer token for logged user
 
 ```powershell
-.\Azucar.ps1 -ExportTo CSV,JSON,XML,EXCEL
+$data = .\Azucar.ps1 -AuthMode UseCachedCredentials -Verbose -WriteLog -Debug -ExportTo PRINT
 ```
 
-This example gets information of various assets of an Azure Tenant, including Active Directory, SQL Server, Security Alerts and Firewall. All information will be exported to CSV format. 
+This example will retrieve information of an Azure Tenant and print results to a local variable. The script will try to connect by using the ADAL library and will try to connect by using a cached credential
+
 ```powershell
-.\Azucar.ps1 -ExportTo CSV -Verbose -Analysis ActiveDirectory,SQLServer,SecurityAlerts,Firewall
+$data = .\Azucar.ps1 -AuthMode Client_Credentials -Verbose -WriteLog -Debug -ExportTo PRINT
 ```
+This example will retrieve information of an Azure Tenant and print results to a local variable. The script will try to connect by using the ADAL library and will try to connect by using the client credential flow
+
+```powershell
+.\Azucar.ps1 -ExportTo CSV,JSON,XML,EXCEL -AuthMode Certificate_Credentials -Certificate C:\AzucarTest\server.pfx -ApplicationId 00000000-0000-0000-0000-000000000000 -TenantID 00000000-0000-0000-0000-000000000000
+```
+This example will retrieve information of an Azure Tenant and export data driven to CSV, JSON, XML and Excel format into Reports folder. The script will try to connect by using the Azure Active Directory Application Certificate credential flow
+
+```powershell
+.\Azucar.ps1 -ExportTo CSV,JSON,XML,EXCEL -AuthMode Certificate_Credentials -Certificate C:\AzucarTest\server.pfx -CertFilePassword MySuperP@ssw0rd! -ApplicationId 00000000-0000-0000-0000-000000000000 -TenantID 00000000-0000-0000-0000-000000000000
+```
+This example will retrieve information of an Azure Tenant and export data driven to CSV, JSON, XML and Excel format into Reports folder. The script will try to connect by using the Azure Active Directory Application Certificate credential flow
+
+```powershell
+.\Azucar.ps1 -ResolveTenantDomainName microsoft.com
+```
+This example will try to resolve the TenantID for an specific domain name
+
+```powershell
+.\Azucar.ps1 -ResolveTenantUserName user@company.com
+```
+This example will try to resolve the TenantID for an specific username
+

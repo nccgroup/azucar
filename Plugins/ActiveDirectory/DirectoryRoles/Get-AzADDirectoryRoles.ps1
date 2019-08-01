@@ -37,6 +37,9 @@
         #Import Localized data
         $LocalizedDataParams = $AzureObject.LocalizedDataParams
         Import-LocalizedData @LocalizedDataParams;
+        #Import Global vars
+        $LogPath = $AzureObject.LogPath
+        Set-Variable LogPath -Value $LogPath -Scope Global
     }
     Process{
         $PluginName = $AzureObject.PluginName
@@ -114,7 +117,7 @@
             $AllDomainDirectoryRolesMembers | Add-Member -type NoteProperty -name Data -value $DirectoryRolesUsers
             #Add Directoryroles data to object
             if($TmpDirectoryRoles){
-                $ReturnPluginObject | Add-Member -type NoteProperty -name DirectoryRolesMembers -value $AllDomainDirectoryRolesMembers
+                $ReturnPluginObject | Add-Member -type NoteProperty -name azure_directory_roles -value $AllDomainDirectoryRolesMembers
             }
         }
         else{

@@ -36,6 +36,9 @@
         #Import Localized data
         $LocalizedDataParams = $AzureObject.LocalizedDataParams
         Import-LocalizedData @LocalizedDataParams;
+        #Import Global vars
+        $LogPath = $AzureObject.LogPath
+        Set-Variable LogPath -Value $LogPath -Scope Global
 
         $Section = $AzureObject.AzureSection
     }
@@ -56,7 +59,7 @@
 
 	    #Create array
         $allDocumentDBAccounts = @()
-        foreach ($account in $documentDBAccounts){
+        foreach ($account in $documentDBAccounts.value){
             $Properties = $account | Select @{Name='id';Expression={$account.id}},`
                                   @{Name='name';Expression={$account.name}},`
                                   @{Name='kind';Expression={$account.kind}},`
@@ -67,10 +70,12 @@
                                   @{Name='databaseAccountOfferType';Expression={$account.properties.databaseAccountOfferType}},`
                                   @{Name='ipRangeFilter';Expression={(@($account.properties.ipRangeFilter) -join ',')}},`
                                   @{Name='virtualNetworkRules';Expression={(@($account.properties.virtualNetworkRules) -join ',')}}                                    
-            #Decorate object
-            $Properties.PSObject.TypeNames.Insert(0,'AzureRM.NCCGroup.DocumentDBAccounts')
-            $allDocumentDBAccounts+=$Properties               	
-       }
+            if($Properties){
+                #Decorate object
+                $Properties.PSObject.TypeNames.Insert(0,'AzureRM.NCCGroup.DocumentDBAccounts')
+                $allDocumentDBAccounts+=$Properties
+            }
+        }
     }
     End{
         if($allDocumentDBAccounts){
@@ -83,7 +88,7 @@
             $AzureDocumentDBAccounts | Add-Member -type NoteProperty -name Data -value $allDocumentDBAccounts
             #Add data to object
             if($AzureDocumentDBAccounts){
-                $ReturnPluginObject | Add-Member -type NoteProperty -name DocumentDBAccounts -value $AzureDocumentDBAccounts
+                $ReturnPluginObject | Add-Member -type NoteProperty -name azure_documentdb -value $AzureDocumentDBAccounts
             }
         }
         else{

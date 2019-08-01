@@ -36,6 +36,9 @@
         #Import Localized data
         $LocalizedDataParams = $AzureObject.LocalizedDataParams
         Import-LocalizedData @LocalizedDataParams;
+        #Import Global vars
+        $LogPath = $AzureObject.LogPath
+        Set-Variable LogPath -Value $LogPath -Scope Global
 
         $Section = $AzureObject.AzureSection
     }
@@ -116,7 +119,7 @@
             $AzureWebApps | Add-Member -type NoteProperty -name Data -value $AllMyWebApps
             #Add data to object
             if($AzureWebApps){
-                $ReturnPluginObject | Add-Member -type NoteProperty -name WebApps -value $AzureWebApps
+                $ReturnPluginObject | Add-Member -type NoteProperty -name azure_app_services -value $AzureWebApps
             }
         }
         else{

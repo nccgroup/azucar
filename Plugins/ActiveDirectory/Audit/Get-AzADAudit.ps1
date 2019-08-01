@@ -36,6 +36,9 @@
         #Import Localized data
         $LocalizedDataParams = $AzureObject.LocalizedDataParams
         Import-LocalizedData @LocalizedDataParams;
+        #Import Global vars
+        $LogPath = $AzureObject.LogPath
+        Set-Variable LogPath -Value $LogPath -Scope Global
     }
     Process{
         $PluginName = $AzureObject.PluginName
@@ -91,7 +94,7 @@
             $AllDomainEvents | Add-Member -type NoteProperty -name Data -value $TmpEvents
             #Add Log events data to object
             if($TmpEvents){
-                $ReturnPluginObject | Add-Member -type NoteProperty -name DomainEvents -value $AllDomainEvents
+                $ReturnPluginObject | Add-Member -type NoteProperty -name azure_domain_events -value $AllDomainEvents
             }
         }
         else{

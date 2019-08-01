@@ -79,7 +79,7 @@
             $AllDomainGroups | Add-Member -type NoteProperty -name Data -value $TmpGroups
             #Add Groups data to object
             if($TmpGroups){
-                $ReturnPluginObject | Add-Member -type NoteProperty -name DomainGroups -value $AllDomainGroups
+                $ReturnPluginObject | Add-Member -type NoteProperty -name azure_domain_groups -value $AllDomainGroups
             }
         }
         else{

@@ -36,6 +36,9 @@
         #Import Localized data
         $LocalizedDataParams = $AzureObject.LocalizedDataParams
         Import-LocalizedData @LocalizedDataParams;
+        #Import Global vars
+        $LogPath = $AzureObject.LogPath
+        Set-Variable LogPath -Value $LogPath -Scope Global
 
         $Section = $AzureObject.AzureSection
     }
@@ -78,7 +81,7 @@
             $AzureSecurityContacts | Add-Member -type NoteProperty -name Data -value $allsecurityContacts
             #Add data to object
             if($AzureSecurityContacts){
-                $ReturnPluginObject | Add-Member -type NoteProperty -name SecurityContacts -value $AzureSecurityContacts
+                $ReturnPluginObject | Add-Member -type NoteProperty -name azure_security_contacts -value $AzureSecurityContacts
             }
         }
         else{

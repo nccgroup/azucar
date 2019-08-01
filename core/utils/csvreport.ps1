@@ -55,10 +55,11 @@
                                 if($query.value.Data -and $query.value.Section){
                                     $PluginPath = Create-CSVFolderReport -RootPath $ReportPath -DirectoryName $query.value.Section
                                     $CSVFile = ("{0}\{1}.csv" -f $PluginPath,$query.Name) #($PluginPath + "\" + ([System.Guid]::NewGuid()).ToString() +$query.Name+ ".csv")
-                                    $query.value.Data | Export-Csv -NoTypeInformation -Path $CSVFile 
+                                    $query.value.Data | Export-Csv -NoTypeInformation -Path $CSVFile
                                 }
                             }
                             catch{
+                                Write-Host ("Error in {0}" -f $query.Name) -ForegroundColor Yellow
                                 $ErrorRecord = New-Object System.Management.Automation.ErrorRecord(
                                             (New-Object Exception($_.Exception)),
                                             $null,

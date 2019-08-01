@@ -36,6 +36,9 @@
         #Import Localized data
         $LocalizedDataParams = $AzureObject.LocalizedDataParams
         Import-LocalizedData @LocalizedDataParams;
+        #Import Global vars
+        $LogPath = $AzureObject.LogPath
+        Set-Variable LogPath -Value $LogPath -Scope Global
     }
     Process{
         $PluginName = $AzureObject.PluginName
@@ -71,6 +74,12 @@
 
                     $uri = ("{0}{1}/{2}?api-version={3}" -f $Instance.ResourceManager, $server.id, "securityAlertPolicies/Default", "2015-05-01-Preview")
                     $ThreatDetectionPolicy = Get-AzSecRMObject -OwnQuery $uri -Manual -Authentication $RMAuth -Verbosity $Verbosity -WriteLog $WriteLog
+                    #######Get SQL Server Active Directory Administrator########
+                    Write-AzucarMessage -WriteLog $WriteLog -Message ("Get Server Active Directory Administrator for {0}..." -f $Server.name) `
+                                        -Plugin $PluginName -Verbosity $Verbosity -IsVerbose
+
+                    $uri = ("{0}{1}/{2}?api-version={3}" -f $Instance.ResourceManager, $server.id, "administrators/activeDirectory", "2014-04-01")
+                    $SQLServer_AD_Administrator = Get-AzSecRMObject -OwnQuery $uri -Manual -Authentication $RMAuth -Verbosity $Verbosity -WriteLog $WriteLog
                     #######Get Server Auditing Policy########
                     #https://www.mssqltips.com/sqlservertip/5180/azure-sql-database-auditing-using-blob-storage/
                     Write-AzucarMessage -WriteLog $WriteLog -Message ("Get server auditing policy for {0}..." -f $Server.name) `
@@ -90,13 +99,27 @@
                     $AzureSqlServer | Add-Member -type NoteProperty -name externalAdministratorLogin -value $server.properties.externalAdministratorLogin
                     $AzureSqlServer | Add-Member -type NoteProperty -name externalAdministratorSid -value $server.properties.externalAdministratorSid
                     $AzureSqlServer | Add-Member -type NoteProperty -name version -value $server.properties.version
+                    $AzureSqlServer | Add-Member -type NoteProperty -name storageAccountAccessKey -value $ServerAuditingPolicy.properties.storageAccountAccessKey
                     $AzureSqlServer | Add-Member -type NoteProperty -name auditingPolicyState -value $ServerAuditingPolicy.properties.state
+                    $AzureSqlServer | Add-Member -type NoteProperty -name auditActionsAndGroups -value (@($ServerAuditingPolicy.properties.auditActionsAndGroups) -join ',')
                     $AzureSqlServer | Add-Member -type NoteProperty -name auditingRetentionDays -value $ServerAuditingPolicy.properties.retentionDays
+                    $AzureSqlServer | Add-Member -type NoteProperty -name isStorageSecondaryKeyInUse -value $ServerAuditingPolicy.properties.isStorageSecondaryKeyInUse
+                    $AzureSqlServer | Add-Member -type NoteProperty -name isAzureMonitorTargetEnabled -value $ServerAuditingPolicy.properties.isAzureMonitorTargetEnabled
                     $AzureSqlServer | Add-Member -type NoteProperty -name threatDetectionPolicy -value $ThreatDetectionPolicy.properties.state
                     $AzureSqlServer | Add-Member -type NoteProperty -name threatDetectionPolicyDisabledAlerts -value $ThreatDetectionPolicy.properties.disabledAlerts
                     $AzureSqlServer | Add-Member -type NoteProperty -name threatDetectionPolicyEmailAddresses -value $ThreatDetectionPolicy.properties.emailAddresses
                     $AzureSqlServer | Add-Member -type NoteProperty -name threatDetectionPolicyEmailAccountAdmins -value $ThreatDetectionPolicy.properties.emailAccountAdmins
                     $AzureSqlServer | Add-Member -type NoteProperty -name threatDetectionPolicyRetentionDays -value $ThreatDetectionPolicy.properties.retentionDays  
+                    if($SQLServer_AD_Administrator){
+                        $AzureSqlServer | Add-Member -type NoteProperty -name isSQLActiveDirectoryAdministratorEnabled -value $true
+                        $AzureSqlServer | Add-Member -type NoteProperty -name sqlserveradministratorType -value $SQLServer_AD_Administrator.properties.administratorType
+                        $AzureSqlServer | Add-Member -type NoteProperty -name sqlserveradlogin -value $SQLServer_AD_Administrator.properties.login
+                        $AzureSqlServer | Add-Member -type NoteProperty -name sqlserveradloginsid -value $SQLServer_AD_Administrator.properties.sid
+                        $AzureSqlServer | Add-Member -type NoteProperty -name sqlserveradlogintenantid -value $SQLServer_AD_Administrator.properties.tenantId
+                    }
+                    else{
+                        $AzureSqlServer | Add-Member -type NoteProperty -name isSQLActiveDirectoryAdministratorEnabled -value $false                        
+                    }
                     #Add to list
                     $AllDatabaseServers+=$AzureSqlServer
                     #Create object for each database found
@@ -170,7 +193,7 @@
             $AllSQLServers | Add-Member -type NoteProperty -name Data -value $AllDatabaseServers
             #Add SQL data to object
             if($AllSQLServers){
-                $ReturnPluginObject | Add-Member -type NoteProperty -name SQLServers -value $AllSQLServers
+                $ReturnPluginObject | Add-Member -type NoteProperty -name azure_sql_servers -value $AllSQLServers
             }
             #Add Servers to list
             #Work with SyncHash
@@ -182,7 +205,7 @@
             $AllSQL | Add-Member -type NoteProperty -name Data -value $AllDatabases
             #Add SQL data to object
             if($AllSQL){
-                $ReturnPluginObject | Add-Member -type NoteProperty -name SQLDatabases -value $AllSQL
+                $ReturnPluginObject | Add-Member -type NoteProperty -name azure_sql_databases -value $AllSQL
             }
         }
         else{

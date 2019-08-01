@@ -87,7 +87,7 @@
                            [System.Management.Automation.ErrorCategory]::InvalidResult,
                            $null
                         )
-             Convert-Exception -MyError $ErrorRecord -FunctionName "Get-AzSecConf" -Print -WriteLog $Global:WriteLog            
+             Convert-Exception -MyError $ErrorRecord -FunctionName "Get-AzSecConf" -WriteLog $Global:WriteLog            
         }
     }
     End{

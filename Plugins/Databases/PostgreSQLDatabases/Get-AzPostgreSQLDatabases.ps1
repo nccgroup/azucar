@@ -36,6 +36,9 @@
         #Import Localized data
         $LocalizedDataParams = $AzureObject.LocalizedDataParams
         Import-LocalizedData @LocalizedDataParams;
+        #Import Global vars
+        $LogPath = $AzureObject.LogPath
+        Set-Variable LogPath -Value $LogPath -Scope Global
     }
     Process{
         $PluginName = $AzureObject.PluginName
@@ -132,7 +135,7 @@
             $AzurePostgreSQLServers | Add-Member -type NoteProperty -name Data -value $AllPostgreSQLServers
             #Add SQL data to object
             if($AzurePostgreSQLServers){
-                $ReturnPluginObject | Add-Member -type NoteProperty -name PostgreSQLServers -value $AzurePostgreSQLServers
+                $ReturnPluginObject | Add-Member -type NoteProperty -name azure_postgresql_servers -value $AzurePostgreSQLServers
             }
             #Add Databases to list
             #Work with SyncHash
@@ -144,7 +147,7 @@
             $AzurePostgreSQL | Add-Member -type NoteProperty -name Data -value $AllPostgreSQLDatabases
             #Add SQL data to object
             if($AzurePostgreSQL){
-                $ReturnPluginObject | Add-Member -type NoteProperty -name PostgreSQLDatabases -value $AzurePostgreSQL
+                $ReturnPluginObject | Add-Member -type NoteProperty -name azure_postgresql_databases -value $AzurePostgreSQL
             }
             #Add Server configuration to list
             #Work with SyncHash
@@ -156,7 +159,7 @@
             $AzurePostgreSQLConfiguration | Add-Member -type NoteProperty -name Data -value $AllPostgreSQLServerConfigurations
             #Add SQL server configuration to object
             if($AzurePostgreSQLConfiguration){
-                $ReturnPluginObject | Add-Member -type NoteProperty -name PostgreSQLServerConfiguration -value $AzurePostgreSQLConfiguration
+                $ReturnPluginObject | Add-Member -type NoteProperty -name azure_postgresql_configuration -value $AzurePostgreSQLConfiguration
             }
         }
         else{

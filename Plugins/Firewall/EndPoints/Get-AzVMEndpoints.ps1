@@ -36,6 +36,9 @@
         #Import Localized data
         $LocalizedDataParams = $AzureObject.LocalizedDataParams
         Import-LocalizedData @LocalizedDataParams;
+        #Import Global vars
+        $LogPath = $AzureObject.LogPath
+        Set-Variable LogPath -Value $LogPath -Scope Global
     }
     Process{
         $PluginName = $AzureObject.PluginName
@@ -82,7 +85,7 @@
             $AllVM | Add-Member -type NoteProperty -name Data -value $AllClassicVM
             #Add VM data to object
             if($AllClassicVM){
-                $ReturnPluginObject | Add-Member -type NoteProperty -name ClassicEndpoints -value $AllVM
+                $ReturnPluginObject | Add-Member -type NoteProperty -name azure_classic_endpoints -value $AllVM
             }
         }
         else{

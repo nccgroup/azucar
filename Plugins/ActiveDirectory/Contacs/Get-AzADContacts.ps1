@@ -36,6 +36,9 @@
         #Import Localized data
         $LocalizedDataParams = $AzureObject.LocalizedDataParams
         Import-LocalizedData @LocalizedDataParams;
+        #Import Global vars
+        $LogPath = $AzureObject.LogPath
+        Set-Variable LogPath -Value $LogPath -Scope Global
     }
     Process{
         $PluginName = $AzureObject.PluginName
@@ -78,7 +81,7 @@
             $AllDomainContacts | Add-Member -type NoteProperty -name Data -value $TmpContacts
             #Add Contacts data to object
             if($TmpContacts){
-                $ReturnPluginObject | Add-Member -type NoteProperty -name DomainContacts -value $AllDomainContacts
+                $ReturnPluginObject | Add-Member -type NoteProperty -name azure_domain_contacts -value $AllDomainContacts
             }
         }
         else{

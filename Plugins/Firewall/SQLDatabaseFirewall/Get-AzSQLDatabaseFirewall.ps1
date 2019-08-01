@@ -36,6 +36,9 @@
         #Import Localized data
         $LocalizedDataParams = $AzureObject.LocalizedDataParams
         Import-LocalizedData @LocalizedDataParams;
+        #Import Global vars
+        $LogPath = $AzureObject.LogPath
+        Set-Variable LogPath -Value $LogPath -Scope Global
     }
     Process{
         $PluginName = $AzureObject.PluginName
@@ -94,7 +97,7 @@
             $DBFWRules | Add-Member -type NoteProperty -name Data -value $AllFWRules
             #Add data to object
             if($DBFWRules){
-                $ReturnPluginObject | Add-Member -type NoteProperty -name DatabaseFirewall -value $DBFWRules
+                $ReturnPluginObject | Add-Member -type NoteProperty -name azure_sql_database_firewall -value $DBFWRules
             }
         }
         else{

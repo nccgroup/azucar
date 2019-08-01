@@ -36,6 +36,9 @@
         #Import Localized data
         $LocalizedDataParams = $AzureObject.LocalizedDataParams
         Import-LocalizedData @LocalizedDataParams;
+        #Import Global vars
+        $LogPath = $AzureObject.LogPath
+        Set-Variable LogPath -Value $LogPath -Scope Global
 
         #Convert Label
         Function _ConvertLabel{
@@ -71,50 +74,50 @@
         #Retrieve Azure Service Management Auth
         $SMAuth = $AzureObject.AzureConnections.ServiceManagement
         #List All Classic Storage Accounts
-        [xml]$StorageAccounts= Get-AzSecSMObject -Instance $Instance -Authentication $SMAuth -ObjectType "storageservices" -Verbosity $Verbosity -WriteLog $WriteLog
+        [xml]$XMLStorageAccounts= Get-AzSecSMObject -Instance $Instance -Authentication $SMAuth -ObjectType "storageservices" -Verbosity $Verbosity -WriteLog $WriteLog
         #Get primary object
-        $AllStorageAccounts = @()
-        if ($StorageAccounts){
-            foreach($Account in $StorageAccounts.StorageServices.StorageService){
-                $StrAccount = New-Object -TypeName PSCustomObject
-                $StrAccount | Add-Member -type NoteProperty -name name -value $Account.ServiceName
-                $StrAccount | Add-Member -type NoteProperty -name location -value $Account.StorageServiceProperties.Location
-                $StrAccount | Add-Member -type NoteProperty -name CreationTime -value $Account.StorageServiceProperties.CreationTime
-                $StrAccount | Add-Member -type NoteProperty -name label -value ( _ConvertLabel -Object $Account.StorageServiceProperties.Label)
-                $StrAccount | Add-Member -type NoteProperty -name status -value $Account.StorageServiceProperties.Status
-                $StrAccount | Add-Member -type NoteProperty -name GeoPrimaryRegion -value $Account.StorageServiceProperties.GeoPrimaryRegion
-                $StrAccount | Add-Member -type NoteProperty -name StatusOfPrimary -value $Account.StorageServiceProperties.StatusOfPrimary
-                $StrAccount | Add-Member -type NoteProperty -name GeoSecondaryRegion -value $Account.StorageServiceProperties.GeoSecondaryRegion
-                $StrAccount | Add-Member -type NoteProperty -name StatusOfSecondary -value $Account.StorageServiceProperties.StatusOfSecondary
-                $StrAccount | Add-Member -type NoteProperty -name AccountType -value $Account.StorageServiceProperties.AccountType
+        $AllClassicStorageAccounts = @()
+        if ($XMLStorageAccounts){
+            foreach($Account in $XMLStorageAccounts.StorageServices.StorageService){
+                $ClassicStorageAccount = New-Object -TypeName PSCustomObject
+                $ClassicStorageAccount | Add-Member -type NoteProperty -name name -value $Account.ServiceName
+                $ClassicStorageAccount | Add-Member -type NoteProperty -name location -value $Account.StorageServiceProperties.Location
+                $ClassicStorageAccount | Add-Member -type NoteProperty -name CreationTime -value $Account.StorageServiceProperties.CreationTime
+                $ClassicStorageAccount | Add-Member -type NoteProperty -name label -value ( _ConvertLabel -Object $Account.StorageServiceProperties.Label)
+                $ClassicStorageAccount | Add-Member -type NoteProperty -name status -value $Account.StorageServiceProperties.Status
+                $ClassicStorageAccount | Add-Member -type NoteProperty -name GeoPrimaryRegion -value $Account.StorageServiceProperties.GeoPrimaryRegion
+                $ClassicStorageAccount | Add-Member -type NoteProperty -name StatusOfPrimary -value $Account.StorageServiceProperties.StatusOfPrimary
+                $ClassicStorageAccount | Add-Member -type NoteProperty -name GeoSecondaryRegion -value $Account.StorageServiceProperties.GeoSecondaryRegion
+                $ClassicStorageAccount | Add-Member -type NoteProperty -name StatusOfSecondary -value $Account.StorageServiceProperties.StatusOfSecondary
+                $ClassicStorageAccount | Add-Member -type NoteProperty -name AccountType -value $Account.StorageServiceProperties.AccountType
                 #Search for Extended Properties
                 foreach($Extended in $Account.ExtendedProperties.ExtendedProperty){
                     if ($Extended.Name -eq 'ResourceGroup'){
-                        $StrAccount | Add-Member -type NoteProperty -name ResourceGroup -value $Extended.Value
+                        $ClassicStorageAccount | Add-Member -type NoteProperty -name ResourceGroup -value $Extended.Value
                     }
                     elseif ($Extended.Name -eq 'ResourceLocation'){
-                        $StrAccount | Add-Member -type NoteProperty -name ResourceLocation -value $Extended.Value
+                        $ClassicStorageAccount | Add-Member -type NoteProperty -name ResourceLocation -value $Extended.Value
                     }
                 }
                 #Decore Object
-                $StrAccount.PSObject.TypeNames.Insert(0,'AzureRM.NCCGroup.ClassicStorageAccount')
+                $ClassicStorageAccount.PSObject.TypeNames.Insert(0,'AzureRM.NCCGroup.ClassicStorageAccount')
                 #Add to Object
-                $AllStorageAccounts+=$StrAccount
+                $AllClassicStorageAccounts+=$ClassicStorageAccount
             }
         }
     }
     End{
-        if($AllStorageAccounts){
+        if($AllClassicStorageAccounts){
             #Work with SyncHash
-            $SyncServer.$($PluginName)=$AllStorageAccounts
-            $AllStorageAccounts.PSObject.TypeNames.Insert(0,'AzureRM.NCCGroup.ClassicStorageAccounts')
+            $SyncServer.$($PluginName)=$AllClassicStorageAccounts
+            $AllClassicStorageAccounts.PSObject.TypeNames.Insert(0,'AzureRM.NCCGroup.ClassicStorageAccounts')
             #Create custom object for store data
-            $AllAccounts = New-Object -TypeName PSCustomObject
-            $AllAccounts | Add-Member -type NoteProperty -name Section -value $Section
-            $AllAccounts | Add-Member -type NoteProperty -name Data -value $AllStorageAccounts
+            $ClassicStorageAccounts = New-Object -TypeName PSCustomObject
+            $ClassicStorageAccounts | Add-Member -type NoteProperty -name Section -value $Section
+            $ClassicStorageAccounts | Add-Member -type NoteProperty -name Data -value $AllClassicStorageAccounts
             #Add data to object
-            if($AllAccounts){
-                $ReturnPluginObject | Add-Member -type NoteProperty -name ClassicStorageAccounts -value $AllAccounts
+            if($ClassicStorageAccounts){
+                $ReturnPluginObject | Add-Member -type NoteProperty -name azure_classic_storage_accounts -value $ClassicStorageAccounts
             }
         }
         else{

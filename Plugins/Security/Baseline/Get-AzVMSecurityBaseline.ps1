@@ -36,6 +36,9 @@
         #Import Localized data
         $LocalizedDataParams = $AzureObject.LocalizedDataParams
         Import-LocalizedData @LocalizedDataParams;
+        #Import Global vars
+        $LogPath = $AzureObject.LogPath
+        Set-Variable LogPath -Value $LogPath -Scope Global
     }
     Process{
         $PluginName = $AzureObject.PluginName
@@ -66,7 +69,7 @@
                                         -Plugin $PluginName -Verbosity $Verbosity -IsVerbose
                     $query = ('let query = \nSecurityBaseline\n| where AnalyzeResult == \"{0}\" and Computer=~ \"{1}\" \n| summarize AggregatedValue = dcount(BaselineRuleId) by BaselineRuleId, RuleSeverity, SourceComputerId, BaselineId, BaselineType, OSName, CceId, BaselineRuleType, Description, RuleSetting, ExpectedResult, ActualResult | sort by RuleSeverity asc| limit 1000000000; query' -f "Failed", $vm.name)
                     #Convert to JSON data
-                    $requestBody = @{"query" = $query;}
+                    $requestBody = @{"query" = $query;"timespan" = 'PT24H'}
                     $JsonData = $requestBody | ConvertTo-Json -Depth 50 | % { [System.Text.RegularExpressions.Regex]::Unescape($_) }
                     $URI = ("{0}{1}/{2}?api-version={3}" -f $Instance.ResourceManager, $workspaceid, "api/query","2017-01-01-preview")
                     #POST Request
@@ -113,7 +116,7 @@
             $SecurityBaseline | Add-Member -type NoteProperty -name Data -value $AllSecBaseline
             #Add VM data to object
             if($SecurityBaseline){
-                $ReturnPluginObject | Add-Member -type NoteProperty -name SecurityBaseline -value $SecurityBaseline
+                $ReturnPluginObject | Add-Member -type NoteProperty -name azure_vm_security_baseline -value $SecurityBaseline
             }
         }
         else{

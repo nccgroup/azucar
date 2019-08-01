@@ -36,6 +36,9 @@
         #Import Localized data
         $LocalizedDataParams = $AzureObject.LocalizedDataParams
         Import-LocalizedData @LocalizedDataParams;
+        #Import Global vars
+        $LogPath = $AzureObject.LogPath
+        Set-Variable LogPath -Value $LogPath -Scope Global
     }
     Process{
         $PluginName = $AzureObject.PluginName
@@ -131,7 +134,7 @@
             $NSGRules | Add-Member -type NoteProperty -name Data -value $AllNSGRules
             #Add data to object
             if($NSGRules){
-                $ReturnPluginObject | Add-Member -type NoteProperty -name NetworkSecurityRules -value $NSGRules
+                $ReturnPluginObject | Add-Member -type NoteProperty -name azure_network_security_rules -value $NSGRules
             }
         }
         else{

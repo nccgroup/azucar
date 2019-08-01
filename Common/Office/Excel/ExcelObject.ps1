@@ -4,12 +4,16 @@
 function Release-Reference(){
     
     #Release each Reference object
+    #https://support.microsoft.com/en-us/help/317109/office-application-does-not-exit-after-automation-from-visual-studio-n
     foreach ( $reference in $args ) { 
-        try{ 
+        try{
+            $reference = $null
+            <# 
             ([System.Runtime.InteropServices.Marshal]::ReleaseComObject( 
             [System.__ComObject]$reference) -gt 0) | Out-Null
             [System.GC]::Collect() | Out-Null
             [System.GC]::WaitForPendingFinalizers() |Out-Null
+            #>
         }
         catch{
             Continue
@@ -138,12 +142,22 @@ function Create-WorkSheet{
 	    $WorkSheet.Activate() | Out-Null
     }
     Process{
-        $WorkSheet.Name = $Title
-	    $WorkSheet.Select()
-	    $Excel.ActiveWindow.Displaygridlines = $false 
+        try{
+            #Try to avoid excel limit sheet name
+            if($Title.Length -ge 31){$Title = $Title.Replace('azure_','')}
+            $WorkSheet.Name = $Title
+	        $WorkSheet.Select()
+	        $Excel.ActiveWindow.Displaygridlines = $false
+        }
+        catch{
+            Write-Host "[Azucar Error][Function Create-WorkSheet]...$($Title)" -ForegroundColor Red 
+            Write-Host "[Azucar Error][Function Create-WorkSheet]...$($_.Exception)" -ForegroundColor Red    
+        }
     }
 	End{
-        Set-Variable WorkSheet -Value $WorkSheet -Scope Global -Force
+        if($WorkSheet.Name){
+            Set-Variable WorkSheet -Value $WorkSheet -Scope Global -Force
+        }
     }
 }
 
@@ -642,7 +656,7 @@ Function Create-Index{
                 $v = $WorkSheet.Hyperlinks.Add($WorkSheet.Cells.Item($row,$col),"","'$($Sheet.Name)'"+"!A1","",$Sheet.Name)
 				$row++
             }
-            $CellRange = $WorkSheet.Range("A1:A40")
+            $CellRange = $WorkSheet.Range("A1:A48")
 		    #$CellRange.Interior.ColorIndex = 9
 		    $CellRange.Font.ColorIndex = 9
             $CellRange.Font.Size = 14
@@ -700,10 +714,16 @@ Function Create-About{
     )
     Begin{
         #Main Report Index
+        if($Subscription.displayName){
+            $reportName = ("{0}: {1}" -f $ExcelSettings.excelSettings.ReportName, $Subscription.displayName)
+        }
+        else{
+            $reportName = ("{0}" -f $ExcelSettings.excelSettings.ReportName)
+        }
 		[Void][Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
 		$WorkSheet = $WorkBook.WorkSheets.Add()
 		$WorkSheet.Name = "About"
-		$WorkSheet.Cells.Item(1,1).Value() = $ExcelSettings["ReportName"]
+		$WorkSheet.Cells.Item(1,1).Value() = $reportName
 		$WorkSheet.Cells.Item(1,1).Font.Size = 25
 		$WorkSheet.Cells.Item(1,1).Font.Bold = $true
         $cnt = 1

@@ -37,6 +37,9 @@
         #Import Localized data
         $LocalizedDataParams = $AzureObject.LocalizedDataParams
         Import-LocalizedData @LocalizedDataParams;
+        #Import Global vars
+        $LogPath = $AzureObject.LogPath
+        Set-Variable LogPath -Value $LogPath -Scope Global
     }
     Process{
         $PluginName = $AzureObject.PluginName
@@ -93,7 +96,7 @@
             $SecurityPolicy | Add-Member -type NoteProperty -name Data -value $AllSecPolicies
             #Add VM data to object
             if($SecurityPolicy){
-                $ReturnPluginObject | Add-Member -type NoteProperty -name SecurityPolicies -value $SecurityPolicy
+                $ReturnPluginObject | Add-Member -type NoteProperty -name azure_security_policies -value $SecurityPolicy
             }
         }
         else{

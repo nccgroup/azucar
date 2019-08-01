@@ -16,6 +16,8 @@ Function Get-AzSecEnvironment{
             $AzureEndPoint | Add-Member -type NoteProperty -name ResourceManager -value "https://management.azure.com/"
             $AzureEndPoint | Add-Member -type NoteProperty -name Servicemanagement -value "https://management.core.windows.net/"
             $AzureEndPoint | Add-Member -type NoteProperty -name LogAnalytics -value "https://api.loganalytics.io/"
+            $AzureEndPoint | Add-Member -type NoteProperty -name Storage -value "https://storage.azure.com/"
+            $AzureEndPoint | Add-Member -type NoteProperty -name Vaults -value "https://vault.azure.net"
         }
         'PreProduction'
         {
@@ -25,6 +27,8 @@ Function Get-AzSecEnvironment{
             $AzureEndPoint | Add-Member -type NoteProperty -name ResourceManager -value "https://api-current.resources.windows-int.net/"
             $AzureEndPoint | Add-Member -type NoteProperty -name Servicemanagement -value "https://management.core.windows.net/"
             $AzureEndPoint | Add-Member -type NoteProperty -name LogAnalytics -value "https://api.loganalytics.io/"
+            $AzureEndPoint | Add-Member -type NoteProperty -name Storage -value "https://storage.azure.com/"
+            $AzureEndPoint | Add-Member -type NoteProperty -name Vaults -value "https://vault.azure.net"
         }
         'China'
         {
@@ -34,6 +38,8 @@ Function Get-AzSecEnvironment{
             $AzureEndPoint | Add-Member -type NoteProperty -name ResourceManager -value "https://management.chinacloudapi.cn/"
             $AzureEndPoint | Add-Member -type NoteProperty -name Servicemanagement -value "https://management.core.chinacloudapi.cn/"
             $AzureEndPoint | Add-Member -type NoteProperty -name LogAnalytics -value "https://api.loganalytics.io/"
+            $AzureEndPoint | Add-Member -type NoteProperty -name Storage -value "https://storage.azure.com/"
+            $AzureEndPoint | Add-Member -type NoteProperty -name Vaults -value "https://vault.azure.net"
         }
         'Government'
         {
@@ -43,6 +49,8 @@ Function Get-AzSecEnvironment{
             $AzureEndPoint | Add-Member -type NoteProperty -name ResourceManager -value "https://management.usgovcloudapi.net/"
             $AzureEndPoint | Add-Member -type NoteProperty -name Servicemanagement -value "https://management.core.usgovcloudapi.net/"
             $AzureEndPoint | Add-Member -type NoteProperty -name LogAnalytics -value "https://api.loganalytics.io/"
+            $AzureEndPoint | Add-Member -type NoteProperty -name Storage -value "https://storage.azure.com/"
+            $AzureEndPoint | Add-Member -type NoteProperty -name Vaults -value "https://vault.azure.net"
         }
         'Germany'
         {
@@ -52,6 +60,8 @@ Function Get-AzSecEnvironment{
             $AzureEndPoint | Add-Member -type NoteProperty -name ResourceManager -value "https://management.microsoftazure.de/"
             $AzureEndPoint | Add-Member -type NoteProperty -name Servicemanagement -value "https://management.core.cloudapi.de/"
             $AzureEndPoint | Add-Member -type NoteProperty -name LogAnalytics -value "https://api.loganalytics.io/"
+            $AzureEndPoint | Add-Member -type NoteProperty -name Storage -value "https://storage.azure.com/"
+            $AzureEndPoint | Add-Member -type NoteProperty -name Vaults -value "https://vault.azure.net"
         }
         'Default'
         {

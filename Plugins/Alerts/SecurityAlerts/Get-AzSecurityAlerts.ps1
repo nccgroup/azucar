@@ -36,6 +36,9 @@
         #Import Localized data
         $LocalizedDataParams = $AzureObject.LocalizedDataParams
         Import-LocalizedData @LocalizedDataParams;
+        #Import Global vars
+        $LogPath = $AzureObject.LogPath
+        Set-Variable LogPath -Value $LogPath -Scope Global
     }
     Process{
         $PluginName = $AzureObject.PluginName
@@ -73,7 +76,7 @@
             $MyAlerts | Add-Member -type NoteProperty -name Data -value $AllAlerts
             #Add data to object
             if($MyAlerts){
-                $ReturnPluginObject | Add-Member -type NoteProperty -name SecurityAlerts -value $MyAlerts
+                $ReturnPluginObject | Add-Member -type NoteProperty -name azure_security_alerts -value $MyAlerts
             }
         }
         else{
