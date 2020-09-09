@@ -6,7 +6,7 @@ The script <b>will not change or modify</b> any asset deployed in the Azure subs
 
 <h1>Operating System Support</h1>
 
-As the script uses the .NET ADAL library for authenticating the user and calling REST APIs, it only supports Windows OS.  
+As the script uses the .NET ADAL library for authenticating a user and calling REST APIs, it only supports Windows OS.  
 
 <h1>Features</h1>
 
