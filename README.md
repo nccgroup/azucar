@@ -1,6 +1,6 @@
 <h1>Introduction</h1>
 
-Azucar is a multi-threaded plugin-based tool to help assess the security of your Azure Cloud environment subscription. By leveraging the Azure API, Azucar automatically gathers and analyses a variety of configuration data related to your particular subscription to determine security risks.
+Azucar is a multi-threaded plugin-based tool to help assess the security of your Azure Cloud environment subscription. By leveraging the Azure API, Azucar automatically gathers, and analyses, a variety of configuration data related to your particular subscription to determine security risks.
 
 The script <b>will not change or modify</b> any asset deployed in the Azure subscription.
 
@@ -45,7 +45,7 @@ The following screenshot shows an example report in JSON format:
 
 <h1>Office Support</h1>
 
-Although there is already support for a variety of file formats (CSV, XML or JSON), you could also export your data to Excel 2010/2013/2016. At the time of writing Azucar supports style modification, chart creation, company logo, and a range of languages.
+Although there is already support for a variety of file formats (CSV, XML or JSON), you could export your data to Excel 2010/2013/2016. At the time of writing Azucar supports style modification, chart creation, company logo, and a range of languages.
 
 ![excel](https://user-images.githubusercontent.com/5271640/38782057-476050c6-40ee-11e8-9935-3c15f5356980.png)
 
