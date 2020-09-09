@@ -15,6 +15,7 @@ As the script uses the .NET ADAL library for authenticating a user and calling R
 * Multi-Threading support.
 * Plugin Support.
 * The following assets are supported by Azucar:
+
     	* Azure SQL Databases, including MySQL and PostgreSQL databases,
 	* Azure Active Directory,
 	* Storage Accounts,
