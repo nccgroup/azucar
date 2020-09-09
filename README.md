@@ -72,11 +72,11 @@ PSRemotingProtocolVersion      2.3
 SerializationVersion           1.1.0.1
 ```
 
-You should use an account with at least **read-permission** on the assets you want to access. You could find more information about Role-Based Access Control in Azure by clicking [here](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal)
+You should use an account with at least **read-permission** on the assets you want to access. You could find more information about Role-Based Access Control in Azure by clicking [here](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal).
 
 <h1>Installation</h1>
 
-You can download the latest zip by clicking [here](https://github.com/nccgroup/azucar/archive/master.zip).
+You can download the latest zip by clicking [this link](https://github.com/nccgroup/azucar/archive/master.zip).
 
 Preferably, you can download Azucar by cloning the [repository](https://github.com/nccgroup/azucar.git):
 
@@ -92,9 +92,9 @@ Get-ChildItem -Recurse c:\Azucar_V10 | Unblock-File
 
 <h1>Write your own plugin</h1>
 
-The plugin mechanism introduced in Azucar provides an easy method for PowerShell developers to dynamically add functionality, so if you want to extend the functionality of Azucar, you can do so by writing your own plugin in PowerShell. 
+The plugin mechanism introduced in Azucar provides an easy method for PowerShell developers to dynamically add new functionality, so if you want to extend the functionality of Azucar, you can do so by writing your own plugin in PowerShell. 
 
-To create a custom plugin, add it to the Plugins\Custom folder. The plugin code is simple. A script plugin is essentially any valid PowerShell script saved in a .ps1 extension. Each is a self-contained PowerShell that will be passed as a scriptblock class. The variable names and return values are the same throughout all plugins, so they can be generically loaded. The following sample shows a basic structure of an Azucar PowerShell plugin:
+**To create a custom plugin**, add it to the Plugins\Custom folder. The plugin code is simple. A script plugin is essentially any valid PowerShell script saved in a .ps1 extension. Each is a self-contained PowerShell that will be passed as a scriptblock class. The variable names and return values are the same throughout all plugins, so they can be generically loaded. The following sample shows a basic structure of an Azucar PowerShell plugin:
 
 ```powershell
 #Sample skeleton PowerShell plugin code
