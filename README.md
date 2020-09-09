@@ -167,7 +167,7 @@ Once you have your plugin prepared and located into the Plugins\Custom directory
 	<img src="https://user-images.githubusercontent.com/5271640/38782034-f56d4882-40ed-11e8-8b37-2b2ae1b3bcb2.png">
 </p>
 
-I created various plugins within the Plugins\Custom folder which you can use to get you started.
+I already created various plugins within the Plugins\Custom folder which you can use to get you started.
 
 <h1>Usage</h1>
 
@@ -191,4 +191,4 @@ get-help .\azucar.ps1 -Detailed
 
 <h1>Remarks</h1>
 
-Due to the amount of work we will not always be able to respond quickly to new issues. But rest assured, you will eventually get a response and if needed a fix. 
+Due to the amount of work we will not always be able to respond quickly to new issues but eventually you will get a response and if needed a fix. 
