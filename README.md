@@ -1,6 +1,6 @@
 <h1>Introduction</h1>
 
-Azucar is a multi-threaded plugin-based tool to help assess the security of a Azure Cloud environment subscription. By leveraging the Azure API, Azucar automatically gathers and analyses a variety of configuration data elating to a particular subscription in order to determine security risks.
+Azucar is a multi-threaded plugin-based tool to help assess the security of a Azure Cloud environment subscription. By leveraging the Azure API, Azucar automatically gathers and analyses a variety of configuration data relating to a particular subscription to determine security risks.
 
 The script <b>will not change or modify</b> any asset deployed in the Azure subscription.
 
