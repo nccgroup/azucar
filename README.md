@@ -45,7 +45,7 @@ The following screenshot shows an example report in JSON format:
 
 <h1>Office Support</h1>
 
-Although there is already support for a variety of file formats (CSV, XML or JSON), you can also export your data to Microsoft Office Excel 2010/2013/2016. Currently, the tool supports style modification, chart creation, company logo or independent language support.
+Although there is already support for a variety of file formats (CSV, XML or JSON), you can also export your data to MSFT Office Excel 2010/2013/2016. Currently, the tool supports style modification, chart creation, company logo or independent language support.
 
 ![excel](https://user-images.githubusercontent.com/5271640/38782057-476050c6-40ee-11e8-9935-3c15f5356980.png)
 
