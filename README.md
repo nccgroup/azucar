@@ -191,4 +191,4 @@ get-help .\azucar.ps1 -Detailed
 
 <h1>Remarks</h1>
 
-Due to the amount of work we will not always be able to respond quickly to new issues but eventually you will get a response and if needed a fix. 
+Due to the amount of work we will not always be able to respond quickly to new issues, but eventually you will get a response and if needed a fix. 
