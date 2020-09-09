@@ -39,7 +39,7 @@ As the script uses the .NET ADAL library for authenticating the user and calling
 
 Support for exporting data driven to several formats like CSV, XML or JSON.
 
-The following screenshot shows an example report in JSON format
+The following screenshot shows an example report in JSON format:
 
 ![threat](https://user-images.githubusercontent.com/5271640/38782058-4779800a-40ee-11e8-8bf5-9b16500e5134.PNG)
 
