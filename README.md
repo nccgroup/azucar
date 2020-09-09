@@ -76,9 +76,7 @@ SerializationVersion           1.1.0.1
 
 <h1>Installation</h1>
 
-You can download the latest zip by clicking [this link](https://github.com/nccgroup/azucar/archive/master.zip).
-
-Preferably, you can download Azucar by cloning the [repository](https://github.com/nccgroup/azucar.git):
+You can either download the latest zip by clicking [this link](https://github.com/nccgroup/azucar/archive/master.zip) or download Azucar by cloning the [repository](https://github.com/nccgroup/azucar.git):
 
 <pre>
 git clone https://github.com/nccgroup/azucar.git
