@@ -2,7 +2,7 @@
 
 Azucar is a multi-threaded plugin-based tool to help assess the security of your Azure Cloud environment.
 
-The script <b>will not change or modify</b> any assets deployed in an Azure subscription.
+The script <b>will not change or modify</b> any assets deployed in an Azure subscription. 
 
 <h1>Operating System Support</h1>
 
