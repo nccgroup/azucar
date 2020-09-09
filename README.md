@@ -190,3 +190,7 @@ To get a list of all options and examples with detailed info use:
 ```powershell
 get-help .\azucar.ps1 -Detailed
 ```
+
+<h1>Remarks</h1>
+
+Due to the amount of work we will not always be able to respond quickly to new issues. But rest assured, you will eventually get a response and if needed a fix. 
