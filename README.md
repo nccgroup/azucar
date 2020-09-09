@@ -72,19 +72,19 @@ PSRemotingProtocolVersion      2.3
 SerializationVersion           1.1.0.1
 ```
 
-You should use an account with at least read-permission on the assets you want to access. You could find more information about Role-Based Access Control in Azure by clicking [here](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal)
+You should use an account with at least **read-permission** on the assets you want to access. You could find more information about Role-Based Access Control in Azure by clicking [here](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal)
 
 <h1>Installation</h1>
 
 You can download the latest zip by clicking [here](https://github.com/nccgroup/azucar/archive/master.zip).
 
-Preferably, you can download AZUCAR by cloning the [repository](https://github.com/nccgroup/azucar.git):
+Preferably, you can download Azucar by cloning the [repository](https://github.com/nccgroup/azucar.git):
 
 <pre>
 git clone https://github.com/nccgroup/azucar.git
 </pre>
 
-Before to start, you need to unblock files. Once you have unzipped the zip file, you can use the fantastic PowerShell V3 Unblock-File cmdlet that will do this task for you:
+Once you have unzipped the zip file, you can use the PowerShell V3 Unblock-File cmdlet to unblock files:
 
 <pre>
 Get-ChildItem -Recurse c:\Azucar_V10 | Unblock-File
