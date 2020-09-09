@@ -10,26 +10,26 @@ As the script uses the .NET ADAL library for authenticating a user and calling R
 
 <h1>Features</h1>
 
-* Return a number of attributes on computers, users, groups, contacts, events, etc... from Azure Active Directory
-* Search for High Level accounts in a specific Azure Tenant, including Azure Active Directory, classic administrators, and Directory Roles (RBAC)
-* Multi-Threading support
-* Plugin Support
+* Return a number of attributes on computers, users, groups, contacts, events, etc... from Azure Active Directory.
+* Search for High Level accounts in a specific Azure Tenant, including Azure Active Directory, classic administrators, and Directory Roles (RBAC).
+* Multi-Threading support.
+* Plugin Support.
 * The following assets are supported by Azucar:
-    * Azure SQL Databases, including MySQL and PostgreSQL databases
-	* Azure Active Directory
-	* Storage Accounts
-	* Classic Virtual Machines
-	* Virtual Machines V2
-	* Security Status
-	* Security Policies
-	* Role Assignments (RBAC)
-	* Missing Security Patches
-	* Missing Security Baseline
-	* Web Application Firewall
-	* Network Security Groups
-	* Classic Endpoints
-	* Azure Security Alerts
-	* Azure KeyVault
+    	* Azure SQL Databases, including MySQL and PostgreSQL databases,
+	* Azure Active Directory,
+	* Storage Accounts,
+	* Classic Virtual Machines,
+	* Virtual Machines V2,
+	* Security Status,
+	* Security Policies,
+	* Role Assignments (RBAC),
+	* Missing Security Patches,
+	* Missing Security Baseline,
+	* Web Application Firewall,
+	* Network Security Groups,
+	* Classic Endpointsy,
+	* Azure Security Alerts,
+	* Azure KeyVault.
 
 <h1>Screenshots</h1>
 
