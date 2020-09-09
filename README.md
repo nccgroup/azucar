@@ -10,8 +10,8 @@ As the script uses the .NET ADAL library for authenticating a user and calling R
 
 <h1>Features</h1>
 
-* Return a number of attributes on computers, users, groups, contacts, events, etc... from an Azure Active Directory
-* Search for High level accounts in Azure Tenant, including Azure Active Directory, classic administrators and Directory Roles (RBAC)
+* Return a number of attributes on computers, users, groups, contacts, events, etc... from Azure Active Directory
+* Search for high level accounts in a specific Azure Tenant, including Azure Active Directory, classic administrators and Directory Roles (RBAC)
 * Multi-Threading support
 * Plugin Support
 * The following assets are supported by Azucar:
