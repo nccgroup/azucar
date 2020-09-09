@@ -90,7 +90,7 @@ Get-ChildItem -Recurse c:\Azucar_V10 | Unblock-File
 
 <h1>Write your own plugin</h1>
 
-The plugin mechanism introduced in Azucar provides an easy method for PowerShell developers to dynamically add new functionality, so if you want to extend the functionality of Azucar, you can do so by writing your own plugin in PowerShell. 
+The plugin mechanism introduced in Azucar provides an easy method for PowerShell developers to dynamically add new functionality, so if you want to extend Azucar, you can do so by writing your own plugin(s) in PowerShell. 
 
 **To use a custom plugin**, add it to the Plugins\Custom folder. For those not familiar with plugin code, a plugin is essentially any valid PowerShell script saved in a .ps1 extension. Each is self-contained PowerShell code that will be passed as a scriptblock class. The variable names and return values are the same throughout all plugins, so they can be generically loaded. 
 
