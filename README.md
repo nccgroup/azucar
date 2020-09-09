@@ -45,7 +45,7 @@ The following screenshot shows an example report in JSON format:
 
 <h1>Office Support</h1>
 
-Although there is already support for a variety of file formats (CSV, XML or JSON), you could export your data to Excel 2010/2013/2016. At the time of writing Azucar supports style modification, chart creation, company logo, and a range of languages.
+Although there is already support for a variety of file formats (CSV, XML or JSON), you could export the data to Excel 2010/2013/2016. At the time of writing Azucar supports style modification, chart creation, company logo, and a range of languages.
 
 ![excel](https://user-images.githubusercontent.com/5271640/38782057-476050c6-40ee-11e8-9935-3c15f5356980.png)
 
@@ -94,7 +94,7 @@ The plugin mechanism introduced in Azucar provides an easy method for PowerShell
 
 To use your custom plugin, add it to the Plugins\Custom folder. For those not familiar with plugins, it's basically self-contained PowerShell code that is passed as a scriptblock class. The variable names and return values stay the same throughout all plugins, so they can be generically loaded. 
 
-The following sample shows a basic structure of an Azucar PowerShell plugin:
+The following sample shows the basic structure of a Azucar PowerShell plugin:
 
 ```powershell
 #Sample skeleton PowerShell plugin code
