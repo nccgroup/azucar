@@ -193,19 +193,19 @@ get-help .\azucar.ps1 -Detailed
 
 <h1>Examples</h1>
 
-This example retrieves information of an Azure Tenant and print results. The script will try to connect using the ADAL library, and if no credential passed, the script will try to connect using the bearer token for logged user
+This example retrieves information of an Azure Tenant and print results. The script will try to connect using the ADAL library, and if no credential passed, the script will try to connect using the bearer token for logged user:
 
 ```powershell
 .\Azucar.ps1 -ExportTo PRINT | Format-List
 ```
 
-This example will retrieve information of an Azure Tenant and print results to a local variable. The script will try to connect using the ADAL library, and if no credential passed, the script will try to connect using the bearer token for logged user
+This example will retrieve information of an Azure Tenant and print results to a local variable. The script will then try to connect using the ADAL library, and if no credential passed, the script will try to connect using the bearer token for logged user
 
 ```powershell
 $data = .\Azucar.ps1 -AuthMode UseCachedCredentials -Verbose -WriteLog -Debug -ExportTo PRINT
 ```
 
-This example will retrieve information of an Azure Tenant and print results to a local variable. The script will try to connect by using the ADAL library and will try to connect by using a cached credential
+This example retrieves information of an Azure Tenant and prints results to a local variable. The script will then try to connect by using the ADAL library and will try to connect by using a cached credential
 
 ```powershell
 $data = .\Azucar.ps1 -AuthMode Client_Credentials -Verbose -WriteLog -Debug -ExportTo PRINT
