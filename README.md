@@ -1,3 +1,7 @@
+<h1>Read-only project</h1>
+
+Please, be aware that this project is no longer maintained. Please, consider use our [ScoutSuite](https://github.com/nccgroup/ScoutSuite) tool.
+
 <h1>Introduction</h1>
 
 Azucar is a multi-threaded plugin-based tool to help you assess the security of your Azure Cloud environment. 
